@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orderlist">
+
+	<resultMap type="vo.OrderDetailVO" id="map1">
+		<!-- 기본키설정 -->
+		<id property="od_key" column="od_key"/>
+		<result property="option_key" column="option_key" />
+		<result property="delivery_key" column="delivery_key" />
+		<association property="d_status" javaType="String" select="delivery.getStatus" column="delivery_key" />
+		<association property="opvo" javaType="vo.OptionVO" select="option.getOption" column="option_key"/>
+		<collection property="os_list" ofType="vo.OrderStatusVO" select="orderstatus.getByOdKey" column="od_key"/>
+	</resultMap>
+
+
+	<update id="cancelAll" parameterType="Map">
+		UPDATE `order`
+		SET is_allcancel = 1,
+			order_changed_qty = 0,
+			total_cancel_price = primary_price,
+			primary_price = 0,
+			mile = 0
+		WHERE order_key = #{order_key}
+	</update>
+	
+	<update id="cancelAll_od" parameterType="Map">
+		UPDATE `order_detail` AS od_u
+		SET  od_u.cancel_qty = od_u.od_qty,
+			 od_u.cancel_price = od_u.od_changed_price,
+			 od_u.od_changed_qty = 0,
+			 od_u.od_changed_price = 0,
+			 od_u.od_mile = 0
+		WHERE od_u.od_key IN (	SELECT od_tmp.od_key
+								FROM (	SELECT od_s.od_key
+										FROM `order_detail` AS od_s
+										WHERE od_s.order_key = #{order_key}) as od_tmp)
+	</update>
+	
+	<update id="cancel" parameterType="Map">
+		UPDATE `order`
+		SET  order_changed_qty = order_changed_qty-#{cancel_qty},
+			 total_cancel_price = total_cancel_price + (#{cell_price}*#{cancel_qty}),
+			 mile = (SELECT SUM(od_mile) FROM `order_detail` WHERE order_key = #{order_key})
+		WHERE order_key = #{order_key}
+	</update>
+	
+	<update id="cancel_od" parameterType="Map">
+		UPDATE `order_detail`
+		SET  cancel_qty = cancel_qty+#{cancel_qty},
+			 cancel_price = cancel_price+cell_price*#{cancel_qty},
+			 od_mile = od_mile - ((od_mile / od_changed_qty) * #{cancel_qty}),
+			 od_changed_qty = (od_changed_qty - #{cancel_qty}),
+			 od_changed_price = od_changed_price-(#{cancel_qty}*cell_price)
+		WHERE od_key = #{od_key}
+	</update>
+	
+	<update id="refundAll" parameterType="Map">
+		UPDATE `order`
+		SET is_allrefund = 1,
+			order_changed_qty = 0,
+			total_refund_price = primary_price,
+			primary_price = 0,
+			mile = 0
+		WHERE order_key = #{order_key}
+	</update>
+	
+	<update id="refundAll_od" parameterType="Map">
+		UPDATE `order_detail` AS od_u
+		SET  od_u.refund_qty = od_u.od_qty,
+			 od_u.refund_price = od_u.od_changed_price,
+			 od_u.od_changed_qty = 0,
+			 od_u.od_changed_price = 0,
+			 od_u.od_mile = 0
+		WHERE od_u.od_key IN (	SELECT od_tmp.od_key
+								FROM (	SELECT od_s.od_key
+										FROM `order_detail` AS od_s
+										WHERE od_s.order_key = #{order_key}) as od_tmp)
+	</update>
+	
+	<update id="refund" parameterType="Map">
+		UPDATE `order`
+		SET  order_changed_qty = order_changed_qty-#{refund_qty},
+			 total_refund_price = total_refund_price + (#{cell_price}*#{refund_qty}),
+			 mile = (SELECT SUM(od_mile) FROM `order_detail` WHERE order_key = #{order_key})
+		WHERE 	order_key = #{order_key}
+	</update>
+	
+	<update id="refund_od" parameterType="Map">
+		UPDATE `order_detail`
+		SET  refund_qty = refund_qty+#{refund_qty},
+			 refund_price = refund_price+cell_price*#{refund_qty},
+			 od_mile = od_mile - ((od_mile / od_changed_qty) * #{refund_qty}),
+			 od_changed_qty = (od_changed_qty - #{refund_qty}),
+			 od_changed_price = od_changed_price-(#{refund_qty}*cell_price)
+			 
+		WHERE od_key = #{od_key}
+	</update>
+	
+	<select id="exchange_od_info" parameterType="Map" resultType="vo.OrderDetailVO">
+		SELECT *
+		FROM `order_detail`
+		WHERE od_key = #{od_key}
+	</select>
+	
+	<insert id="exchange_od_add" parameterType="vo.OrderDetailVO">
+		INSERT INTO `order_detail` (order_key, option_key, delivery_key, c_idx, od_delivery_start, od_delivery_end, od_waybill, od_confirm, od_iscoupon, od_mile, d_price, od_usedmile, cancel_qty, refund_qty, cancel_price, refund_price, od_qty, od_changed_qty, od_totalprice, od_changed_price, isexchanged, od_price, cell_price)
+		VALUES (#{order_key}, #{option_key}, #{delivery_key}, #{c_idx}, NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 0, 0, 0, #{od_mile}, #{d_price}, 0, 0, 0, 0, 0, #{od_qty}, #{od_changed_qty}, #{od_totalprice}, #{od_changed_price}-#{d_price}, 1, #{od_price}, #{cell_price})
+	</insert>
+	
+	<update id="exchange_od_ex" parameterType="Map">
+		UPDATE `order_detail`
+		SET  od_mile = od_mile - ((od_mile / od_changed_qty) * #{exchange_qty}),
+			 od_changed_qty = (od_changed_qty - #{exchange_qty}),
+			 od_changed_price = od_changed_price-(#{exchange_qty}*cell_price)
+			 
+		WHERE od_key = #{od_key}
+	</update>
+	
+	<insert id="addOS" parameterType="Map">
+		INSERT INTO `order_status`(od_key, os_option, os_qty, os_price, os_msg, os_create_dtm, os_confirm)
+		VALUES (#{od_key}, #{os_option}, #{os_qty}, #{os_price}, #{os_msg}, NOW(), 1)
+	</insert>
+	
+	<select id="getOd_key" resultType="vo.OrderDetailVO" parameterType="String">
+		SELECT *
+		FROM `order_detail`
+		WHERE order_key = #{order_key}
+	</select>
+	
+	<update id="confirm" parameterType="String">
+		UPDATE `order_detail`
+		SET  od_confirm = 1
+		WHERE od_key = #{od_key}
+	</update>
+	
+	<select id="getOd_list" resultMap="map1" parameterType="String">
+		SELECT *
+		FROM `order_detail`
+		WHERE order_key = #{order_key}
+	</select>
+	
+	<update id="prod_up" parameterType="String">
+		UPDATE `product`
+		SET  stock = stock + #{qty}
+		WHERE product_key = #{product_key}
+	</update>
+	
+	<update id="opt_up" parameterType="String">
+		UPDATE `option`
+		SET  prod_stock = prod_stock + #{qty}
+		WHERE option_key = #{option_key}
+	</update>
+	
+	<update id="opt_down" parameterType="String">
+		UPDATE `option`
+		SET  prod_stock = prod_stock - #{b_qty}
+		WHERE option_key = #{option_key}
+	</update>
+	
+	
+	<select id="getOd_cnt" resultType="int" parameterType="String">
+		SELECT COUNT(*)
+		FROM `order_detail`
+		WHERE order_key = (	SELECT order_key
+							FROM `order_detail`
+							WHERE od_key = #{od_key})
+	</select>
+	
+	<select id="check_confirm" resultType="int" parameterType="String">
+		SELECT COUNT(*)
+		FROM `order_detail`
+		WHERE order_key = (	SELECT order_key
+							FROM `order_detail`
+							WHERE od_key = #{od_key})
+			  AND od_confirm = 1;
+	</select>
+	
+	<update id="confirm_O" parameterType="String">
+		UPDATE `order`
+		SET  confirm = 1, final_price = primary_price
+		WHERE order_key = (	SELECT order_key
+							FROM `order_detail`
+							WHERE od_key = #{od_key})
+	</update>
+	
+	
+</mapper>
+
+
+
+
+
+
+

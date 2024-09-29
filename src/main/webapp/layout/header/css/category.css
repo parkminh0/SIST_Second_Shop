@@ -1,0 +1,104 @@
+
+/** 전체메뉴 **/
+	#d_full_btn p { position:relative; z-index:10; float:left; top:-1px; width:220px; height:52px; line-height:52px; background-image:url('/shop/layout/header/img/btn_all_off_w.png'); background-repeat:no-repeat; background-position:0 0; cursor:pointer; font-size:16px; font-weight:bold; text-indent:45px; transition-delay:.05s; }
+	#d_full_btn.on { background-color:rgba(0,0,0,.7); text-indent:19px; }
+	#d_full_btn p:hover,
+	#d_full_btn.on p { z-index:21; background-image:url('/shop/layout/header/img/btn_all_on_w.png'); background-repeat:no-repeat; background-position:0 0; background-color:rgba(255,255,255,.97); transition:background .2s ease; }
+	#d_full_btn .close { display:none; }
+
+    /* 스크롤높이 */
+	#d_full_btn .scrollbar_box { height:600px; }
+
+	#category-full { position:absolute; display:none; z-index:20; top:50px; left:-1px; width:1238px; padding:20px 0 20px 20px; border:1px solid rgba(0,0,0,.3); background-color:rgba(255,255,255,1); box-shadow:0 3px 4px rgba(0,0,0,.1); cursor:default; text-align:left; text-indent:0; }
+    #category-full h2 { display:block; line-height:25px; margin:10px 20px 20px 0; padding:0 0 10px; border-bottom:1px solid rgba(0,0,0,.7); font-size:18px; font-weight:bold; }
+	#category-full a { display:block; line-height:28px; font-size:14px; color:#333; text-transform:uppercase /*ellipsis*/; overflow:hidden; white-space:nowrap; transition:all .2s ease; }
+    #category-full a:hover { text-decoration:none; color:#000; }
+
+    #category-full .d1-wrap { position:relative; z-index:2; margin:0 0 30px; vertical-align:top; }
+
+    /* 1depth */
+	#category-full .d1-wrap .d1 { position:relative; display:inline-block; width:190px; margin:0 10px 40px 0; vertical-align:top; }
+	#category-full .d1-wrap .d1 > a { height:30px; line-height:28px; margin:0 0 10px; padding:0 0 0 10px; border-bottom:1px solid rgba(0,0,0,.1); font-size:15px; font-weight:bold; color:#333; transition:all .3s ease; }
+	#category-full .d1-wrap .d1:hover > a,
+	#category-full .d1-wrap .d1.on > a { border-bottom:1px solid #555; color:#111; }
+
+    /* 2depth */
+	#category-full .d2-wrap .d2 { position:relative; }
+	#category-full .d2-wrap .d2 > a { padding:0 0 0 10px; }
+	#category-full .d2-wrap .d2 > a:hover,
+	#category-full .d2-wrap .d2.on > a { background-color:rgba(0,0,0,.03); color:#111; font-weight:bold; }
+    #category-full .d2-wrap .d2.be { background:url('/shop/layout/header/img/dotB_3.png') no-repeat 95% 50%; }
+    #category-full .d2-wrap .d2.on.be { background:url('/shop/layout/header/img/dotB_3.png') no-repeat 97% 50%; transition:all .2s ease; }
+    #category-full .d2-wrap .img { display:none; }
+
+    /* 3depth */
+	#category-full .d3-wrap { position:absolute; display:none; left:100%; top:-11px; padding:10px 0; background:#fff; border:1px solid #ddd; }
+	#category-full .d3-wrap .d3 { position:relative; }
+	#category-full .d3-wrap .d3 > a { min-width:160px; padding:0 20px 0 15px; }
+	#category-full .d2-wrap .d3 > a:hover,
+	#category-full .d3-wrap .d3.on > a { background-color:rgba(0,0,0,.03); color:#111; font-weight:bold; }
+    #category-full .d3-wrap .d3.be { background:url('/shop/layout/header/img/dotB_3.png') no-repeat 95% 50%; }
+    #category-full .d3-wrap .d3.on.be { background:url('/shop/layout/header/img/dotB_3.png') no-repeat 97% 50%; transition:all .2s ease; }
+	#category-full .d3-wrap {
+	    position: absolute;
+	    left: 100%;
+	    top: -11px;
+	    padding: 10px 0;
+	    background: #fff;
+	    border: 1px solid #ddd;
+	}
+    /* 4depth */
+	#category-full .d4-wrap { position:absolute; display:none; left:100%; top:-11px; padding:10px 0; background:#fff; border:1px solid #ddd; }
+	#category-full .d4-wrap .d4 > a { min-width:160px; padding:0 20px 0 15px; }
+	#category-full .d3-wrap .d4 > a:hover { background-color:rgba(0,0,0,.03); color:#111; }
+
+    /* 추가메뉴1 사용시 설정 */
+	#category-full .d1-wrap .d1:nth-child(5) .d4-wrap,
+	#category-full .d1-wrap .d1:nth-child(10) .d4-wrap,
+	#category-full .d1-wrap .d1:nth-child(15) .d4-wrap { left:-182px; }
+
+    /* 1285px 이하 */
+    @media all and (max-width:1285px){
+        #category-full { width:973px; }
+        #category-full h2 { width:725px; }
+        #category-full .left_section { width:725px; }
+    }
+
+
+
+
+	/** 전체메뉴 > 추가메뉴 **/
+    #category-full .categorySub { position:relative; vertical-align:top; margin:0 0 30px; }
+    #category-full .categorySub.m01 { z-index:3; }
+    #category-full .categorySub.m02 { }
+    #category-full .categorySub.comm { }
+    #category-full .categorySub.etc { }
+
+    #category-full .categorySub ul { position:relative; }
+
+	/* 공통 */
+    #category-full .categorySub li { display:block; position:relative; line-height:28px; text-indent:10px; vertical-align:top; font-size:14px; font-weight:normal; transition:all .3s ease; }
+    #category-full .categorySub li:hover,
+    #category-full .categorySub li.on { background-color:rgba(0,0,0,.03); font-weight:bold; color:#000; }
+    #category-full .categorySub li.arrow { background-image:url('/shop/layout/header/img/dotB_3.png'); background-repeat:no-repeat; background-position:94% 50%; transition:all .3s ease; }
+    #category-full .categorySub li.on.arrow { background-image:url('/shop/layout/header/img/dotB_3.png'); background-repeat:no-repeat; background-position:96% 50%; }
+    #category-full .categorySub a { position:absolute; top:0; right:0; bottom:0; left:0; width:100%; font-size:0; }
+
+    /* 1depth */
+    #category-full .categorySub > li { position:relative; display:inline-block; *display:inline; *zoom:1; width:190px; line-height:30px; margin:0 10px 30px 0; font-size:15px; font-weight:bold; }
+    #category-full .categorySub > li:hover,
+    #category-full .categorySub > li.on { background:none; color:#111; }
+
+    /* 2depth */
+    #category-full .categorySub > li > ul { padding:10px 0 0; border-top:1px solid rgba(0,0,0,.1); transition:all .3s ease; }
+    #category-full .categorySub > li:hover  > ul { border-top:1px solid #555; }
+    #category-full .categorySub > li > ul > li { text-overflow:ellipsis; white-space:nowrap; }
+
+    /* 3depth */
+    #category-full .categorySub > li > ul > li > ul { display:none; position:absolute; left:190px; top:-11px; min-width:120px; padding:10px 0; background:#fff; border:1px solid #ddd; }
+
+    /* 4depth */
+    #category-full .categorySub > li > ul > li > ul > li > ul { display:none; position:absolute; left:140px; top:-11px; min-width:120px; padding:10px 0; background:#fff; border:1px solid #ddd; }
+
+
+

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="option">
+	<resultMap type="vo.OptionVO" id="map1">
+		<result property="option_key" column="option_key"/>
+		<result property="product_key" column="product_key"/>
+		<association property="pvo" javaType="vo.ProductVO" select="product.getProduct" column="option_key" />
+		<association property="product_name" javaType="String" select="option.getProductName" column="product_key"/>
+		<association property="img_url" javaType="String" select="option.getImgUrl" column="product_key"/>
+	</resultMap>
+
+	<select id="getOptionByProduct" resultMap="map1" parameterType="String">
+		SELECT * FROM `option`
+		WHERE product_key = #{product_key}
+	</select>
+	
+	<select id="getOption" resultMap="map1" parameterType="Map">
+		SELECT * FROM `option`
+		WHERE option_key = #{option_key}
+	</select>
+	
+	<select id="getOrderList" resultMap="map1" parameterType="String">
+		SELECT * from `option`
+		WHERE option_key = #{option_key}
+	</select>	
+	
+	<select id="getProductName" resultType="String" parameterType="Map">
+		SELECT prod_name FROM `product`
+		WHERE product_key = #{product_key}
+	</select>
+	
+	<select id="getImgUrl" resultType="String" parameterType="Map">
+		SELECT img_url FROM `product`
+		WHERE product_key = #{product_key}
+	</select>
+	
+	<delete id="deleteOption" parameterType="Map">
+		DELETE FROM `option`
+		WHERE product_key = #{product_key}
+	</delete>
+	
+	<insert id="addOption" parameterType="map">
+		INSERT INTO `option`
+			(
+				`product_key`,
+				`size`,
+				`color`,
+				`prod_stock`
+			)
+			VALUES
+			(
+				#{product_key},
+				#{size},
+				#{color},
+				#{prod_stock}
+			)
+	</insert>
+</mapper>

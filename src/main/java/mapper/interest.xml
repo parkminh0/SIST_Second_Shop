@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="interest">
+	<resultMap type="vo.ProductVO" id="map1">
+		<id property="product_key" column="product_key"/>
+		<collection property="option_list" ofType="vo.OptionVO" select="option.getOptionByProduct" column="product_key"/>
+	</resultMap>
+	
+	<select id="search" resultType="vo.InterestVO" parameterType="String">
+		SELECT * from p_interest
+		WHERE u_idx = #{u_idx}
+		ORDER BY create_dtm DESC
+	</select>
+	
+	<insert id="add" parameterType="vo.InterestVO">		
+		INSERT INTO p_interest(
+			u_idx,
+			product_key,
+			create_dtm
+		) VALUES (
+			#{u_idx},
+			#{product_key},
+			now()
+		)
+	</insert>
+	
+	<delete id="delete" parameterType="vo.InterestVO">
+		DELETE FROM p_interest
+		 WHERE u_idx = #{u_idx}
+		   AND product_key = #{product_key}
+	</delete>
+	
+	 <select id="search_p" parameterType="String" resultMap="map1">
+        SELECT p.*
+        FROM p_interest i
+        JOIN user u ON u.u_idx = i.u_idx
+        JOIN product p ON p.product_key = i.product_key
+        WHERE u.u_idx = #{u_idx}
+    </select>
+    
+    
+    <select id="search_p2" resultMap="map1" parameterType="String">
+    	SELECT p.* 
+    	FROM (	SELECT *, row_number() over (order by interest_key asc) rnum
+          		FROM p_interest
+          		WHERE 1 = 1	
+				AND u_idx = #{u_idx}
+				ORDER BY interest_key ASC) pi
+        JOIN product p ON p.product_key = pi.product_key
+		WHERE pi.rnum BETWEEN #{begin} and #{end}
+    </select>
+    
+</mapper>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="couponlist">
+	
+	<resultMap type="vo.CouponlistVO" id="map1">
+		<!-- 기본키설정 -->
+		<id property="u_idx" column="u_idx"/>
+		<result property="c_qty" column="c_qty"/>
+		<association property="c_list"  javaType="vo.CouponVO" select="coupon.mycouponlist" column="c_idx"/>
+	</resultMap>
+	
+	<select id="count" parameterType="String" resultType="int">		
+		SELECT count(*) from couponlist
+		WHERE u_idx = #{u_idx} and c_qty >= 1
+	</select>
+	
+	<update id="update" parameterType="Map">		
+
+		<choose>
+			<when test="isApply == 1">
+				UPDATE couponlist 
+				SET c_qty = c_qty - 1 
+				WHERE u_idx = #{u_idx} AND c_idx = #{c_idx} AND c_qty > 0
+			</when>
+			<when test="isApply == 0">
+				UPDATE couponlist
+				SET c_qty = c_qty + 1 
+				where u_idx = #{u_idx} AND c_idx = #{c_idx}
+			</when>
+		</choose>
+	</update>
+	
+	<select id="mycouponcount" parameterType="Map" resultType="int">
+		SELECT count(*)
+		FROM couponlist cl
+		JOIN coupon c ON cl.c_idx = c.c_idx
+		WHERE (cl.u_idx = #{u_idx} AND c.category_key = #{category_key}) OR (cl.u_idx = #{u_idx} AND c.category_key = 0)
+	</select>
+	
+	<select id="search" resultMap="map1" parameterType="Map">
+		SELECT * FROM(
+			SELECT @RN:=@RN+1 AS rnum, a.* FROM(
+				SELECT * FROM couponlist
+				WHERE u_idx = #{u_idx} and c_qty >= 1
+			) a, (SELECT @RN:=0) b
+		) c WHERE c.rnum BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="search_mycouponorder" resultMap="map1" parameterType="Map">
+		SELECT * FROM (
+        SELECT @RN:=@RN+1 AS rnum, a.* FROM (
+            SELECT cl.* FROM couponlist cl
+            JOIN coupon c ON cl.c_idx = c.c_idx
+            WHERE cl.u_idx = #{u_idx} AND (c.category_key = #{category_key} OR c.category_key = 0)
+        ) a, (SELECT @RN:=0) b
+    ) c WHERE c.rnum BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<delete id="deleteCouponList" parameterType="map">
+	DELETE FROM `couponlist`
+	WHERE c_idx = #{c_idx}
+	</delete>
+</mapper>	

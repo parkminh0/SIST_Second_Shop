@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="order">
+
+	<resultMap type="vo.OrderVO" id="map1">
+		<!-- 기본키설정 -->
+		<id property="order_key" column="order_key"/>
+		<association property="od_count" javaType="int" select="orderdetail.count" column="order_key" />
+		<association property="product_summ" javaType="String" select="orderdetail.getName" column="order_key"/>
+	</resultMap>
+
+	<resultMap type="vo.OrderVO" id="map2">
+		<!-- 기본키설정 -->
+		<id property="order_key" column="order_key"/>
+		<result property="delivery_key" column="delivery_key" />
+		<association property="d_status" javaType="String" select="delivery.getStatus" column="delivery_key" />
+		<collection property="od_list" ofType="vo.OrderDetailVO" select="orderdetail.getByOrderKey" column="order_key"/>
+	</resultMap>
+
+
+	<!-- 해당 게시물의 전체게시물 수를 반환 -->
+	<select id="count" resultType="int" parameterType="Map">
+		SELECT COUNT(*) FROM `order`
+		WHERE u_idx = #{u_idx} and confirm = #{tabType}
+	</select>	
+	
+	<!-- 게시물 목록을 만들기 위한 select -->
+	<select id="list" resultMap="map1"
+	parameterType="Map">
+		SELECT * FROM(
+			SELECT @RN:=@RN+1 AS rnum, a.* FROM(
+				SELECT * FROM `order`
+				WHERE u_idx = #{u_idx} and confirm = #{tabType}
+				ORDER BY order_key DESC
+			) a, (SELECT @RN:=0) b
+		) c WHERE c.rnum BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="wlist" resultType="vo.OrderVO" 
+	parameterType="Map">
+		SELECT *
+		FROM `order`
+		WHERE u_idx = #{u_idx}
+	</select>
+	
+	<select id="user_wlist" resultMap="map2" 
+	parameterType="Map">
+		SELECT *
+		FROM `order`
+		WHERE u_idx = #{u_idx}
+	</select>
+	<select id="search_orderkey" resultType="int" parameterType="int">
+		SELECT IFNULL(order_key, 1)
+		FROM `order` 
+		ORDER BY order_key DESC 
+		LIMIT 1 OFFSET #{count}
+	</select>
+	
+	<insert id="save" parameterType="Map">
+		INSERT INTO `order` (u_idx, delivery_key, paymethod, delivery_price, delivery_msg, confirm,
+                            grade, ratio_mile, mile, usedmile, d_price, t_discount,
+                            destination, receiver, zip_code, receiver_tel, is_allcancel,total_cancel_price,
+                            is_allrefund, total_refund_price, order_dtm, order_qty,
+                            order_changed_qty, primary_price, final_price)
+        VALUES (#{u_idx}, 1, 0, #{delivery_price}, #{delivery_msg}, 0,
+                #{grade}, #{ratio_mile}, #{mile}, #{usedmile}, #{d_price}, #{t_discount},
+                #{destination}, #{receiver}, #{zip_code}, #{receiver_tel}, 0, 0,
+                0, 0, now(), #{order_qty}, #{order_qty}, #{primary_price}, #{final_price})
+	</insert>
+	
+	<select id="statistic_main" resultType="vo.admin.statistic_mainVO">
+	SELECT IFNULL(SUM(od.od_changed_price), 0) changed_price,
+		   IFNULL(SUM(od.od_totalprice), 0) total_price,
+		   IFNULL(SUM(od.od_totalprice - od.od_changed_price), 0) cancel_price,
+	       COUNT(*) od_qty,
+	       IFNULL(SUM(od.od_qty - od.od_changed_qty), 0) od_changed_qty,
+	       COUNT(CASE WHEN DATE(od.od_delivery_start) = DATE(now()) THEN 1 END) od_delivery_start,
+	       COUNT(CASE WHEN DATE(od.od_delivery_end) = DATE(now()) THEN 1 END) od_delivery_end
+	  FROM `order_detail` od
+	  JOIN `order` o ON o.order_key = od.order_key
+	 WHERE 1 = 1
+	   AND DATE(o.order_dtm) = DATE(now())
+	   AND od.od_confirm = 1
+   </select>
+   
+   <select id="statistic_main_product" resultType="vo.admin.statistic_main_productVO">
+   	SELECT ROW_NUMBER() OVER (order by sum(od.od_changed_qty) DESC) rnum,
+		   p.prod_name,
+	       op.size,
+	       op.color,
+	       sum(od.od_changed_qty) qty
+	  FROM `order_detail` od
+	  JOIN `order` o ON o.order_key = od.order_key
+	  JOIN `option` op ON op.option_key = od.option_key
+	  JOIN `product` p ON p.product_key = op.product_key
+	 WHERE 1 = 1
+	   AND DATE(o.order_dtm) = DATE(now())
+	   AND od.od_confirm = 1
+	 GROUP BY od.option_key
+   </select>
+   
+   <select id="statistic_user_mile" resultType="vo.admin.statistic_user_mileVO" parameterType="map">
+   SELECT x.*
+	      FROM ( SELECT row_number() over (order by o.order_dtm DESC) rnum,
+ 		   o.order_dtm,
+		   COUNT(CASE WHEN od.od_mile > 0 THEN 1 END) AS getmile,
+	       SUM(od.od_mile) AS getprice,
+		   COUNT(CASE WHEN od.od_usedmile > 0 THEN 1 END) AS usemile,
+		   SUM(od.od_usedmile) AS useprice,
+		   SUM(od.od_mile) - SUM(od.od_usedmile) AS totalprice
+	  FROM `order_detail` od
+	  JOIN `order` o ON o.order_key = od.order_key
+	  JOIN `option` op ON op.option_key = od.option_key
+	  JOIN `product` p ON p.product_key = op.product_key
+	 WHERE 1 = 1
+	   	 <if test="start_date != '' and end_date != ''">
+		 	AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+		 </if>
+		 <if test="start_date != '' and end_date == ''">
+		 	AND o.order_dtm <![CDATA[>=]]>  #{start_date}
+		 </if>
+		 <if test="start_date == '' and end_date != ''">
+		 	AND o.order_dtm <![CDATA[<=]]>  #{end_date}
+		 </if>
+	   AND od.od_confirm = 1
+	 GROUP BY o.order_dtm) x
+	 WHERE x.rnum BETWEEN #{begin} and #{end}
+   </select>
+   
+   <select id="statistic_user_mile_paging" resultType="int" parameterType="map">
+   SELECT COUNT(*)
+     FROM (SELECT o.order_dtm,
+		   COUNT(CASE WHEN od.od_mile > 0 THEN 1 END) AS getmile,
+	       SUM(od.od_mile) AS getprice,
+		   COUNT(CASE WHEN od.od_usedmile > 0 THEN 1 END) AS usemile,
+		   SUM(od.od_usedmile) AS useprice,
+		   SUM(od.od_mile) - SUM(od.od_usedmile) AS totalprice
+	  FROM `order_detail` od
+	  JOIN `order` o ON o.order_key = od.order_key
+	  JOIN `option` op ON op.option_key = od.option_key
+	  JOIN `product` p ON p.product_key = op.product_key
+	 WHERE 1 = 1
+	   	 <if test="start_date != '' and end_date != ''">
+		 	AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+		 </if>
+		 <if test="start_date != '' and end_date == ''">
+		 	AND o.order_dtm <![CDATA[>=]]>  #{start_date}
+		 </if>
+		 <if test="start_date == '' and end_date != ''">
+		 	AND o.order_dtm <![CDATA[<=]]>  #{end_date}
+		 </if>
+	   AND od.od_confirm = 1
+	 GROUP BY o.order_dtm
+	 ORDER BY o.order_dtm DESC) x
+   </select>
+
+   <select id="statistic_user_grade" resultType="vo.admin.statistic_user_gradeVO" parameterType="map">
+   	SELECT x.ug_idx, x.grade, x.u_qty, IFNULL(y.qty, 0) qty, IFNULL(y.od_qty, 0) od_qty, IFNULL(y.total_price, 0) total_price,  IFNULL(y.cancel_qty, 0) cancel_qty, IFNULL(y.cancel_price, 0) cancel_price
+	  FROM
+	 (SELECT ug.ug_idx,
+		     ug.grade,
+		     (SELECT COUNT(*) FROM `user` WHERE ug_idx = ug.ug_idx) u_qty
+	  FROM `u_grade` ug
+	 GROUP BY ug.ug_idx, ug.grade) x
+	LEFT JOIN (
+	SELECT ug.grade, 
+	       COUNT(*) AS qty, 
+	       SUM(od.od_qty) AS od_qty,
+	       SUM(od.od_totalprice) AS total_price, 
+	       SUM(od.od_qty - od.od_changed_qty) AS cancel_qty,
+	       SUM(od.od_totalprice - od.od_changed_price) AS cancel_price
+	  FROM `u_grade` ug
+	  JOIN `user` u ON u.ug_idx = ug.ug_idx
+	  JOIN `order` o ON o.u_idx = u.u_idx
+	  JOIN `order_detail` od ON o.order_key = od.order_key
+	 WHERE od_confirm = 1
+	 <if test="start_date != '' and end_date != ''">
+		 	AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+	 </if>
+	 <if test="start_date != '' and end_date == ''">
+	 	AND o.order_dtm <![CDATA[>=]]>  #{start_date}
+	 </if>
+	 <if test="start_date == '' and end_date != ''">
+	 	AND o.order_dtm <![CDATA[<=]]>  #{end_date}
+	 </if>
+	 GROUP BY ug.grade ) y ON x.grade = y.grade
+	 ORDER BY x.ug_idx
+   </select>
+
+	<!-- 배송관리 -->
+	<select id="searchDeli" resultType="vo.OrderVO" parameterType="map">
+	    SELECT x.*
+	    FROM (
+	        SELECT *, ROW_NUMBER() OVER (ORDER BY order_key DESC) rnum
+	        FROM `order`
+	        WHERE 1=1
+	        <if test="search_text != null and search_text != ''">
+	            <choose>
+	                <when test="search_type == 'order_key'">
+	                    AND order_key = #{search_text}
+	                </when>
+	                <when test="search_type == 'receiver'">
+	                    AND receiver LIKE CONCAT('%', #{search_text}, '%')
+	                </when>
+	            </choose>
+	        </if>
+	        <if test="start_date != null and start_date != '' and end_date != null and end_date != ''">
+	            AND order_dtm BETWEEN #{start_date} AND #{end_date}
+	        </if>
+	        <if test="start_date != null and start_date != '' and (end_date == null or end_date == '')">
+	            AND order_dtm <![CDATA[>=]]> #{start_date}
+	        </if>
+	        <if test="(start_date == null or start_date == '') and end_date != null and end_date != ''">
+	            AND order_dtm <![CDATA[<=]]> #{end_date}
+	        </if>
+	    ) x
+	    WHERE x.rnum BETWEEN #{begin} AND #{end}
+	</select>
+	
+   <select id="statistic_user_day" resultType="vo.admin.statistic_user_dayVO" parameterType="map">
+   	SELECT x.dayname, 
+	   ifnull(y.u_qty, 0) u_qty,
+       IFNULL(z.od_qty, 0) od_qty, 
+       IFNULL(z.total_price, 0) total_price,  
+       IFNULL(z.cancel_qty, 0) cancel_qty, 
+       IFNULL(z.cancel_price, 0) cancel_price
+	  FROM
+			(SELECT 1 AS dayofweek, '일요일' AS dayname UNION ALL
+			SELECT 2, '월요일' UNION ALL
+			SELECT 3, '화요일' UNION ALL
+			SELECT 4, '수요일' UNION ALL
+			SELECT 5, '목요일' UNION ALL
+			SELECT 6, '금요일' UNION ALL
+			SELECT 7, '토요일') x
+	LEFT JOIN (SELECT DAYOFWEEK(reg_dtm) reg_dtm, COUNT(*) u_qty FROM `user`
+				WHERE 1 = 1
+				<if test="start_date != '' and end_date != ''">
+					 	AND reg_dtm BETWEEN #{start_date} AND #{end_date}
+				 </if>
+				 <if test="start_date != '' and end_date == ''">
+				 	AND reg_dtm <![CDATA[>=]]>  #{start_date}
+				 </if>
+				 <if test="start_date == '' and end_date != ''">
+				 	AND reg_dtm <![CDATA[<=]]>  #{end_date}
+				 </if>
+				GROUP BY DAYOFWEEK(reg_dtm)
+			  ) y ON x.dayofweek = y.reg_dtm
+	LEFT JOIN (SELECT DAYOFWEEK(o.order_dtm) order_dtm,
+					  SUM(od.od_qty) AS od_qty,
+					  SUM(od.od_totalprice) AS total_price, 
+					  SUM(od.od_qty - od.od_changed_qty) AS cancel_qty,
+					  SUM(od.od_totalprice - od.od_changed_price) AS cancel_price
+				 FROM `order` o
+				 JOIN `order_detail` od ON o.order_key = od.order_key
+				WHERE od_confirm = 1
+				<if test="start_date != '' and end_date != ''">
+					 	AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+				 </if>
+				 <if test="start_date != '' and end_date == ''">
+				 	AND o.order_dtm <![CDATA[>=]]>  #{start_date}
+				 </if>
+				 <if test="start_date == '' and end_date != ''">
+				 	AND o.order_dtm <![CDATA[<=]]>  #{end_date}
+				 </if>
+			    GROUP BY DAYOFWEEK(o.order_dtm)
+			   ) z ON x.dayofweek = z.order_dtm
+   </select>
+   
+   <select id="statistic_cell_day" resultType="vo.admin.statistic_cell_dayVO" parameterType="map">
+   	SELECT x.*
+   	FROM(SELECT row_number() over (order by x.Date DESC) rnum, x.Date order_dtm, IFNULL(y.order_qty, 0) order_qty, IFNULL(y.prod_qty, 0) prod_qty, IFNULL(y.before_price, 0) before_price, IFNULL(y.mile_price, 0) mile_price,
+	       IFNULL(y.coupon_price, 0) coupon_price,  IFNULL(y.after_price, 0) after_price, IFNULL(y.cancel_price, 0) cancel_price, IFNULL(y.changed_price, 0) changed_price
+	FROM ((SELECT
+	    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) as Date
+	FROM 
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3
+	WHERE
+	    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) BETWEEN #{start_date} AND #{end_date}
+	GROUP BY
+	    Date
+	ORDER BY
+	    Date) x
+	    LEFT JOIN
+	(SELECT o.order_dtm,
+			COUNT(*) AS order_qty,
+			SUM(od.od_qty) AS prod_qty,
+	        SUM(od.od_totalprice) AS before_price,
+	        SUM(od.od_usedmile) AS mile_price,
+			SUM(od.d_price) AS coupon_price,
+	        SUM(od.od_totalprice - od.od_usedmile - od.d_price) AS after_price,
+			SUM(od.od_totalprice - od.od_changed_price) AS cancel_price,
+			SUM(od.od_changed_price) AS changed_price
+	  FROM `option` op
+	  JOIN `product` p ON p.product_key = op.product_key
+	  JOIN `order_detail` od ON od.option_key = op.option_key
+	  JOIN `order` o ON o.order_key = od.order_key
+	  WHERE od.od_confirm = 1
+	  AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+	  GROUP BY o.order_dtm) y
+	  ON x.Date = y.order_dtm)) x
+	   WHERE x.rnum BETWEEN #{begin} and #{end}
+   </select>
+   <!-- 페이징 -->
+   <select id="statistic_cell_day_paging" resultType="int" parameterType="map">
+   SELECT COUNT(*) 
+   FROM(
+   	SELECT x.Date order_dtm, IFNULL(y.order_qty, 0) order_qty, IFNULL(y.prod_qty, 0) prod_qty, IFNULL(y.before_price, 0) before_price, IFNULL(y.mile_price, 0) mile_price,
+	       IFNULL(y.coupon_price, 0) coupon_price,  IFNULL(y.after_price, 0) after_price, IFNULL(y.cancel_price, 0) cancel_price, IFNULL(y.changed_price, 0) changed_price
+	FROM ((SELECT
+	    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) as Date
+	FROM 
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3
+	WHERE
+	    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) BETWEEN #{start_date} AND #{end_date}
+	GROUP BY
+	    Date
+	ORDER BY
+	    Date) x
+	    LEFT JOIN
+	(SELECT  o.order_dtm,
+			COUNT(*) AS order_qty,
+			SUM(od.od_qty) AS prod_qty,
+	        SUM(od.od_totalprice) AS before_price,
+	        SUM(od.od_usedmile) AS mile_price,
+			SUM(od.d_price) AS coupon_price,
+	        SUM(od.od_totalprice - od.od_usedmile - od.d_price) AS after_price,
+			SUM(od.od_totalprice - od.od_changed_price) AS cancel_price,
+			SUM(od.od_changed_price) AS changed_price
+	  FROM `option` op
+	  JOIN `product` p ON p.product_key = op.product_key
+	  JOIN `order_detail` od ON od.option_key = op.option_key
+	  JOIN `order` o ON o.order_key = od.order_key
+	  WHERE od.od_confirm = 1
+	  AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+	  GROUP BY o.order_dtm) y
+	  ON x.Date = y.order_dtm)) x
+   </select>
+   
+   <select id="statistic_cell_month" resultType="vo.admin.statistic_cell_dayVO" parameterType="map">
+   	SELECT x.*
+	   	FROM(SELECT row_number() over (order by DATE_FORMAT(x.Date, '%Y-%m') DESC) rnum, 
+	       DATE_FORMAT(x.Date, '%Y-%m') order_dtm, 
+	       SUM(IFNULL(y.order_qty, 0)) order_qty, SUM(IFNULL(y.prod_qty, 0)) prod_qty, SUM(IFNULL(y.before_price, 0)) before_price, SUM(IFNULL(y.mile_price, 0)) mile_price,
+		       SUM(IFNULL(y.coupon_price, 0)) coupon_price,  SUM(IFNULL(y.after_price, 0)) after_price, SUM(IFNULL(y.cancel_price, 0)) cancel_price, SUM(IFNULL(y.changed_price, 0)) changed_price
+		FROM ((SELECT
+		    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) as Date
+		FROM 
+		    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1,
+		    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2,
+		    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3
+		WHERE
+		    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) BETWEEN #{start_date} AND #{end_date}
+		GROUP BY
+		    Date
+		ORDER BY
+		    Date) x
+		    LEFT JOIN
+		(SELECT 
+				DATE(o.order_dtm) AS order_dtm,
+				COUNT(*) AS order_qty,
+				SUM(od.od_qty) AS prod_qty,
+		        SUM(od.od_totalprice) AS before_price,
+		        SUM(od.od_usedmile) AS mile_price,
+				SUM(od.d_price) AS coupon_price,
+		        SUM(od.od_totalprice - od.od_usedmile - od.d_price) AS after_price,
+				SUM(od.od_totalprice - od.od_changed_price) AS cancel_price,
+				SUM(od.od_changed_price) AS changed_price
+		  FROM `option` op
+		  JOIN `product` p ON p.product_key = op.product_key
+		  JOIN `order_detail` od ON od.option_key = op.option_key
+		  JOIN `order` o ON o.order_key = od.order_key
+		  WHERE od.od_confirm = 1
+		  AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+		  GROUP BY
+		  	DATE(o.order_dtm)
+		  ) y
+	ON x.Date = y.order_dtm)
+	GROUP BY DATE_FORMAT(x.Date, '%Y-%m')) x
+	   WHERE x.rnum BETWEEN #{begin} and #{end}
+   </select>
+   <!-- 페이징 -->
+   <select id="statistic_cell_month_paging" resultType="int" parameterType="map">
+   SELECT COUNT(*) 
+   FROM(
+   	SELECT row_number() over (order by DATE_FORMAT(x.Date, '%Y-%m') DESC) rnum, 
+       DATE_FORMAT(x.Date, '%Y-%m') order_dtm, 
+       SUM(IFNULL(y.order_qty, 0)) order_qty, SUM(IFNULL(y.prod_qty, 0)) prod_qty, SUM(IFNULL(y.before_price, 0)) before_price, SUM(IFNULL(y.mile_price, 0)) mile_price,
+	       SUM(IFNULL(y.coupon_price, 0)) coupon_price,  SUM(IFNULL(y.after_price, 0)) after_price, SUM(IFNULL(y.cancel_price, 0)) cancel_price, SUM(IFNULL(y.changed_price, 0)) changed_price
+	FROM ((SELECT
+	    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) as Date
+	FROM 
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3
+	WHERE
+	    DATE_ADD(#{start_date}, INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) BETWEEN #{start_date} AND #{end_date}
+	GROUP BY
+	    Date
+	ORDER BY
+	    Date) x
+	    LEFT JOIN
+	(SELECT 
+			DATE(o.order_dtm) AS order_dtm,
+			COUNT(*) AS order_qty,
+			SUM(od.od_qty) AS prod_qty,
+	        SUM(od.od_totalprice) AS before_price,
+	        SUM(od.od_usedmile) AS mile_price,
+			SUM(od.d_price) AS coupon_price,
+	        SUM(od.od_totalprice - od.od_usedmile - od.d_price) AS after_price,
+			SUM(od.od_totalprice - od.od_changed_price) AS cancel_price,
+			SUM(od.od_changed_price) AS changed_price
+	  FROM `option` op
+	  JOIN `product` p ON p.product_key = op.product_key
+	  JOIN `order_detail` od ON od.option_key = op.option_key
+	  JOIN `order` o ON o.order_key = od.order_key
+	  WHERE od.od_confirm = 1
+	  AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+	  GROUP BY
+	  	DATE(o.order_dtm)
+	  ) y
+ON x.Date = y.order_dtm)
+GROUP BY DATE_FORMAT(x.Date, '%Y-%m')) x
+   </select>
+   
+   <select id="admin_index_cell" resultType="vo.admin.admin_index_cellVO">
+   SELECT  DATE_FORMAT(x.order_dtm, '%m월 %d일') order_dtm,
+		   IFNULL(order_qty, 0) order_qty,
+	       IFNULL(order_price, 0) order_price,
+	       IFNULL(changed_qty, 0) changed_qty,
+	       IFNULL(changed_price, 0) changed_price,
+	       IFNULL(cancel_qty, 0) cancel_qty,
+	       IFNULL(cancel_price, 0) cancel_price
+	  FROM
+	(SELECT
+	    DATE_SUB(CURDATE(), INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) as order_dtm
+	FROM 
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2,
+	    (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3
+	WHERE
+	    DATE_SUB(CURDATE(), INTERVAL (t1.i + t2.i*10 + t3.i*100) DAY) BETWEEN DATE_SUB(CURDATE(), INTERVAL 29 DAY) AND CURDATE()
+	GROUP BY
+	    order_dtm
+	ORDER BY
+	    order_dtm) x
+	LEFT JOIN
+	(SELECT  o.order_dtm,
+			SUM(od.od_qty) AS order_qty,
+	        SUM(od.od_totalprice) AS order_price,
+	        SUM(od.od_changed_qty) AS changed_qty,
+	        SUM(od.od_changed_price) AS changed_price,
+			SUM(od.cancel_qty + od.refund_qty) AS cancel_qty,
+			SUM(od.cancel_price + od.refund_price) AS cancel_price
+	  FROM `option` op
+	  JOIN `product` p ON p.product_key = op.product_key
+	  JOIN `order_detail` od ON od.option_key = op.option_key
+	  JOIN `order` o ON o.order_key = od.order_key
+	  GROUP BY o.order_dtm) y
+	  ON x.order_dtm = y.order_dtm
+	ORDER BY order_dtm DESC
+   </select>
+   
+   <select id="admin_index_status" resultType="vo.admin.admin_index_statusVO">
+   SELECT COUNT(CASE WHEN od.delivery_key = 2 THEN 1 END) d_ready,
+		   COUNT(CASE WHEN od.delivery_key = 3 THEN 1 END) d_ing,
+	       COUNT(CASE WHEN od.delivery_key = 4 AND DATE(od_delivery_end) = DATE(now()) THEN 1 END) d_end,
+	       COUNT(CASE WHEN od_confirm = 1 AND DATE(o.order_dtm) = DATE(now()) THEN 1 END) d_confirm,
+	       COUNT(CASE WHEN os.os_confirm = 0 AND os.os_option = 1 THEN 1 END) cancel_qty,
+	       COUNT(CASE WHEN os.os_confirm = 0 AND os.os_option = 2 THEN 1 END) exchange_qty,
+	       COUNT(CASE WHEN os.os_confirm = 0 AND os.os_option = 3 THEN 1 END) refund_qty
+	  FROM `order_detail` od
+	  JOIN `order` o ON o.order_key = od.order_key
+	  LEFT JOIN `order_status` os ON os.od_key = od.od_key
+   </select>
+   
+   <select id="admin_order_totalorder" resultType="vo.admin.admin_order_totalorderVO" parameterType="map">
+   SELECT *
+		  FROM (
+   SELECT row_number() over (order by o.order_dtm DESC) rnum,
+   		   o.order_dtm, 
+	       o.order_key, 
+	       u.name,
+	       o.primary_price, 
+	       o.final_price,
+	       COUNT(CASE WHEN od.delivery_key = 1 THEN 1 END) d_ready,
+	       COUNT(CASE WHEN od.delivery_key = 2 THEN 1 END) d_ing,
+	       COUNT(CASE WHEN od.delivery_key = 3 THEN 1 END) d_done,
+	       COUNT(CASE WHEN os.os_option = 1 THEN 1 END) cancel_qty,
+	       COUNT(CASE WHEN os.os_option = 2 THEN 1 END) exchange_qty,
+	       COUNT(CASE WHEN os.os_option = 3 THEN 1 END) refund_qty
+	  FROM `order` o
+	  JOIN order_detail od ON o.order_key = od.order_key
+	  JOIN `option` op ON op.option_key = od.option_key
+	  JOIN `user` u ON u.u_idx = o.u_idx
+	  LEFT JOIN order_status os ON os_key = o.order_key
+	 WHERE 1 = 1
+	 <if test="search_text != '' and search_by != ''">
+	 	<choose>
+	 		<when test="search_by == 'order_key'">AND o.order_key = #{search_text}</when>
+	 		<when test="search_by == 'od_waybill'">AND od.od_waybill LIKE CONCAT('%', #{search_text}, '%')</when>
+	 		<when test="search_by == 'name'">AND u.name LIKE CONCAT('%', #{search_text}, '%')</when>
+	 		<when test="search_by == 'id'">AND u.id LIKE CONCAT('%', #{search_text}, '%')</when>
+	 		<when test="search_by == 'receiver'">AND o.receiver LIKE CONCAT('%', #{search_text}, '%')</when>
+	 	</choose>
+	 </if>
+	 AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+	 GROUP BY o.order_key) x
+		 WHERE x.rnum BETWEEN #{begin} and #{end}
+   </select>
+   
+   <select id="admin_order_totalorder_paging" resultType="int" parameterType="map">
+   SELECT COUNT(*) FROM (SELECT o.order_dtm, 
+	       o.order_key, 
+	       u.name,
+	       o.primary_price, 
+	       o.final_price,
+	       COUNT(CASE WHEN od.delivery_key = 1 THEN 1 END) d_ready,
+	       COUNT(CASE WHEN od.delivery_key = 2 THEN 1 END) d_ing,
+	       COUNT(CASE WHEN od.delivery_key = 3 THEN 1 END) d_done,
+	       COUNT(CASE WHEN os.os_option = 1 THEN 1 END) cancel_qty,
+	       COUNT(CASE WHEN os.os_option = 2 THEN 1 END) exchange_qty,
+	       COUNT(CASE WHEN os.os_option = 3 THEN 1 END) refund_qty
+	  FROM `order` o
+	  JOIN order_detail od ON o.order_key = od.order_key
+	  JOIN `option` op ON op.option_key = od.option_key
+	  JOIN `user` u ON u.u_idx = o.u_idx
+	  LEFT JOIN order_status os ON os_key = o.order_key
+	 WHERE 1 = 1
+	 <if test="search_text != '' and search_by != ''">
+	 	<choose>
+	 		<when test="search_by == 'order_key'">AND o.order_key = #{search_text}</when>
+	 		<when test="search_by == 'od_waybill'">AND od.od_waybill LIKE CONCAT('%', #{search_text}, '%')</when>
+	 		<when test="search_by == 'name'">AND u.name LIKE CONCAT('%', #{search_text}, '%')</when>
+	 		<when test="search_by == 'id'">AND u.id LIKE CONCAT('%', #{search_text}, '%')</when>
+	 		<when test="search_by == 'receiver'">AND o.receiver LIKE CONCAT('%', #{search_text}, '%')</when>
+	 	</choose>
+	 </if>
+	 AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+	 GROUP BY o.order_key) x
+   </select>
+</mapper>
+
+
+
+
+
+
+

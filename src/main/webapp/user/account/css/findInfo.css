@@ -1,0 +1,32 @@
+.findPw{
+	padding: 20px;
+}
+
+.findPw span{
+	margin: 5px 0 !important;
+}
+
+.formCss{
+	text-align: center;
+	border: 2px solid rgb(170,170,170);
+	padding: 5px;
+	
+}
+
+.formCss .getInfo{
+	width: 300px;
+	margin: 0 auto;
+	font-size: 14px;
+}
+
+.desc.findInfo{
+	font-size: 15px;
+	text-align: center;
+	padding: 0 15px;
+}
+.desc.findInfo strong{
+	font-size: 20px;
+	text-align: center;
+	padding: 0 15px;
+	color: rgb(25,145,25);
+}

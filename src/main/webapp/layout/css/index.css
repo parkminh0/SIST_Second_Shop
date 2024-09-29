@@ -1,0 +1,39 @@
+div.indWrapper{
+	width: 800px;
+}
+
+.indWrapper .horiScroll{
+	white-space: nowrap;
+	overflow: auto;
+}
+
+.indWrapper .horiScroll > li {
+    margin: 5px 0.992% 15px !important;
+}
+
+span#ellipsis{
+	display: inline-block;
+	white-space: nowrap; 
+	width: 100%; 
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+h2.indH2 img{
+	width: 100%;
+	margin: 0 auto;
+}
+
+h2.indH2 {
+    display: inline-block;
+    position: relative;
+    left: 50%;
+    min-width: 20%;
+    margin: 0 auto 40px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #1e1e1e;
+    text-align: center;
+    font-size: 23px;
+    color: #1e1e1e;
+    transform: translate(-50%, 0);
+}

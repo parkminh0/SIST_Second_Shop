@@ -1,0 +1,297 @@
+@charset "UTF-8";
+#wrap.beta .headingArea.gSubmain {
+    width: 1028px;
+}
+#wrap .headingArea.gSubmain {
+    position: relative;
+    padding: 0;
+    margin: 0 0 16px;
+}
+
+#wrap .headingArea.gSubmain .mTitle {
+    position: relative;
+    margin: 0;
+}
+
+#wrap .headingArea.gSubmain h1 {
+    position: relative;
+    display: inline-block;
+    padding: 0 4px 0 0;
+    height: 32px;
+    line-height: 32px;
+    color: #1b1e26;
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+#wrap.beta .dashMain {
+    margin-left: 0;
+}
+.dashMain {
+    width: 1028px;
+    margin: 30px 0 0 -12px;
+}
+
+.mDashGrid {
+    display: -webkit-flex;
+    display: -ms-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    -ms-align-items: stretch;
+    align-items: stretch;
+    margin: 0 0 45px -34px;
+}
+
+.mDashGrid .grid {
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    min-width: 0;
+    float: left;
+    width: 497px;
+    margin: 0 0 0 34px;
+    box-sizing: border-box;
+}
+
+.mDashGrid .mDashPannel {
+    margin: 0;
+}
+
+.mDashPannel .header {
+    display: -webkit-flex;
+    display: -ms-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    -ms-align-items: stretch;
+    align-items: stretch;
+    width: 100%;
+    padding: 0 8px 0 0;
+    border: 1px solid #7a9fd1;
+    color: #fff;
+    box-sizing: border-box;
+    background: #87afe3;
+}
+
+.mDashPannel .header > .title {
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    float: left;
+    padding: 10px 10px 8px;
+}
+
+html:lang(ko) .mDashPannel .header > .title h2 {
+    font-size: 13px;
+}
+.mDashPannel .header > .title h2 {
+    display: inline-block;
+    font-size: 12px;
+    vertical-align: top;
+}
+
+.mDashPannel .header .more {
+    display: -webkit-flex;
+    display: -ms-flex;
+    display: flex;
+    -webkit-align-self: stretch;
+    -ms-align-self: stretch;
+    align-self: stretch;
+    position: relative;
+    float: right;
+    padding: 10px 0 8px 8px;
+    font-size: 11px;
+    letter-spacing: 0;
+    color: #fff;
+    box-sizing: border-box;
+}
+
+.mDashPannel .total {
+    position: relative;
+    height: 97px;
+    padding: 11px 8px 9px;
+    border: 1px solid #cdcdcd;
+    border-top: 0;
+    box-sizing: border-box;
+    background: #e4e7f1;
+}
+
+html:lang(ko) .mDashPannel .total .update {
+    font-size: 13px;
+}
+.mDashPannel .total .update {
+    display: block;
+    font-size: 12px;
+    color: #354c84;
+    background: #e4e7f1;
+}
+
+.mDashPannel .total .price {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 9px;
+    margin: 26px 0 0;
+    font-weight: normal;
+    text-align: right;
+}
+
+.mDashPannel .total .number {
+    font-family: Verdana, sans-serif;
+    font-size: 30px;
+    color: #568cd0;
+    letter-spacing: -0.08em;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+html:lang(ko) .mDashPannel tbody th[scope*='row'] {
+    font-size: 13px;
+}
+.mDashPannel tbody tr th:first-child {
+    border-left: 1px solid #d9dadc;
+}
+.mDashPannel .gCell tbody th {
+    padding: 8px 0 7px;
+    border-right: 0;
+    vertical-align: top;
+    background: #fff;
+}
+.mDashPannel tbody th[scope*='row'] {
+    padding: 13px 10px;
+    border-right: 1px solid #d9dadc;
+    border-bottom: 1px solid #d9dadc;
+    font-weight: normal;
+    font-size: 12px;
+    color: #1c1c1c;
+    text-align: left;
+    background: #f5f3f4;
+}
+
+th, td {
+    border: 0;
+    word-wrap: break-word;
+}
+
+.mDashPannel .gCell th .title {
+    line-height: 1;
+}
+.mDashPannel .board th .title {
+    width: 100%;
+    box-sizing: border-box;
+}
+.mDashPannel .board .title {
+    display: inline-block;
+    padding: 0 0 0 10px;
+    color: #9a9a9a;
+    text-align: left;
+}
+
+.icoDot {
+    width: 3px;
+    height: 3px;
+    margin-right: 3px;
+    background-position: 0 -50px;
+}
+.icoPrint, .icoNew, .icoFile, .icoUp, .icoDown, .icoShop, .icoDot, .icoDepth, .icoFix, .icoChecked, .icoLock {
+    display: inline-block;
+    overflow: hidden;
+    margin: -3px 0 0 0;
+    font-size: 0;
+    line-height: 0;
+    vertical-align: middle;
+    background: url(//img.echosting.cafe24.com/ec/v2/sfix_icon_image.png) 0 0 no-repeat;
+}
+
+.mDashPannel .gCell tbody td {
+    padding: 8px 14px 7px;
+    vertical-align: top;
+}
+html:lang(ko) .mDashPannel td {
+    font-size: 13px;
+}
+.mDashPannel .right {
+    text-align: right;
+}
+
+.mDashPannel td {
+    border-right: 1px solid #d9dadc;
+    border-bottom: 1px solid #d9dadc;
+    font-size: 12px;
+    color: #1c1c1c;
+    background: #fff;
+}
+
+.txtEm, .txtEm a {
+    color: #3971ff;
+    font-style: normal;
+}
+
+.dashMain .mBoard .best .no {
+    border-color: #7a9fd1;
+    color: #fff;
+    background: #87afe3;
+}
+
+.mBoard .center {
+    text-align: center;
+}
+.mBoard tfoot > tr > th, .mBoard tbody > tr > td {
+    border-top-width: 0;
+}
+.mBoard tbody td {
+    border: 1px solid #d9dadc;
+}
+.mBoard th, .mBoard td {
+    padding: 9px 9px 7px;
+    vertical-align: top;
+}
+
+.dashMain .mBoard .best .name {
+    font-weight: bold;
+    color: #599ee3;
+}
+
+.mBoard.gSmall td {
+    width: auto;
+}
+.mBoard tfoot > tr > th, .mBoard tbody > tr > td {
+    border-top-width: 0;
+}
+.mBoard tbody td {
+    border: 1px solid #d9dadc;
+}
+.mBoard th, .mBoard td {
+    padding: 9px 9px 7px;
+    vertical-align: top;
+}
+
+.btnDate, .btnDate span {
+    height: 28px;
+}
+[class^="btn"], [class^="btn"] span {
+    cursor: pointer;
+}
+.btnNormal, .btnNormal span, .btnCtrl, .btnCtrl span, .btnDate, .btnDate span, .btnGeneral, .btnGeneral span, .btnStrong, .btnStrong span, .btnSubmit, .btnSubmit span, .btnEm, .btnEm span, .btnSearch, .btnSearch span, .btnToggle {
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+a {
+    text-decoration: none;
+    color: #1b1e26;
+}
+.duet-date-picker-grid {
+    display: inline-block;
+    max-width: 500px;
+}

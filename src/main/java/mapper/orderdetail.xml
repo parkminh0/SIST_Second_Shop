@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orderdetail">
+	
+	<resultMap type="vo.OrderDetailVO" id="map1">
+		<!-- 기본키설정 -->
+		<id property="od_key" column="od_key"/>
+		<result property="option_key" column="option_key" />
+		<result property="delivery_key" column="delivery_key" />
+		<association property="d_status" javaType="String" select="delivery.getStatus" column="delivery_key" />
+		<association property="opvo" javaType="vo.OptionVO" select="option.getOption" column="option_key"/>
+		<collection property="os_list" ofType="vo.OrderStatusVO" select="orderstatus.getByOdKey" column="od_key"/>
+	</resultMap>
+	
+	<resultMap type="vo.OrderVO" id="map2">
+		<!-- 기본키설정 -->
+		<id property="order_key" column="order_key"/>
+		<result property="delivery_key" column="delivery_key" />
+		<association property="d_status" javaType="String" select="delivery.getStatus" column="delivery_key" />
+	</resultMap>
+	
+	<select id="olist_o" resultMap="map2" parameterType="Map">
+		SELECT distinct o.*
+		FROM `order` as o
+		JOIN `order_detail` as od ON od.order_key = o.order_key
+		WHERE o.u_idx = #{u_idx} AND o.order_changed_qty > 0
+		AND order_dtm BETWEEN #{start_date} AND #{end_date}
+		<if test="delivery_key != 0">
+			AND od.delivery_key = #{delivery_key}
+		</if>
+	</select>
+	
+	
+	<select id="olist_od" resultMap="map1" parameterType="Map">
+		SELECT *
+		FROM `order_detail`
+		WHERE order_key = #{order_key}
+		<if test="delivery_key != 0">
+			AND delivery_key = #{delivery_key}
+		</if>
+	</select>
+
+	<select id="getOdvo" resultMap="map1" parameterType="Map">
+		SELECT *
+		FROM `order_detail`
+		WHERE od_key = #{od_key}
+	</select>
+
+	<!-- 해당 게시물의 전체게시물 수를 반환 -->
+	<select id="count" resultType="int" parameterType="Map">
+		SELECT COUNT(*) FROM `order_detail`
+		WHERE order_key = #{order_key}
+	</select>	
+	
+	<!-- 게시물 목록을 만들기 위한 select -->
+	<select id="getName" resultType="String" 
+	parameterType="Map">
+	
+		SELECT prod_name FROM product
+		WHERE product_key = ( 	SELECT product_key
+								FROM `option`
+								WHERE option_key =(	SELECT option_key
+													FROM `order_detail`
+													WHERE order_key = #{order_key}
+													LIMIT 1 )
+							 )
+	</select>
+	
+	<select id="getByOrderKey" resultMap="map1" parameterType="Map">
+		SELECT * FROM `order_detail`
+		WHERE order_key = #{order_key}
+	</select>	
+	
+	<insert id="save" parameterType="Map">
+		INSERT INTO `order_detail` (order_key, 
+									option_key, 
+									delivery_key, 
+									c_idx, od_delivery_start, od_delivery_end, od_waybill, od_confirm, od_iscoupon, od_mile, d_price, od_usedmile, cancel_qty, refund_qty, cancel_price, refund_price, od_qty, 
+									od_changed_qty, 
+									od_totalprice, 
+									od_changed_price, 
+									isexchanged, 
+									od_price, 
+									cell_price
+									)
+		VALUES (
+		#{order_key}, #{option_key}, #{delivery_key}, #{c_idx}, NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 
+		2000, 0, 0, #{od_mile}, #{d_price}, 0, 0, 0, 0, 0, #{od_qty}, #{od_qty}, 
+		#{od_qty}*#{cell_price}, 
+		#{od_qty}*#{cell_price}-#{d_price}, 0, #{od_price}, 
+		#{cell_price})
+	</insert>
+</mapper>
+
+
+
+
+
+
+

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="coupon">
+	
+	<select id="mycouponlist" resultType="vo.CouponVO" parameterType="Map">
+		SELECT * FROM coupon WHERE c_idx = #{c_idx}
+	</select>
+	
+	<select id="search" resultType="vo.CouponVO" parameterType="String">
+		SELECT * from coupon
+		 WHERE c_idx = #{c_idx}
+		 ORDER BY due_date DESC
+	</select>
+
+    <select id="searchCoupons" resultType="vo.CouponVO" parameterType="Map">
+        SELECT x.*
+        FROM (
+        SELECT *, row_number() over (order by c_idx DESC) rnum
+        FROM coupon
+        WHERE 1=1
+        <if test="c_name != null and c_name != ''">
+            AND c_name LIKE CONCAT('%', #{c_name}, '%')
+        </if>
+        <if test="d_type != null and d_type != ''">
+		    AND d_type = #{d_type}
+		</if>
+        <if test="issue_sort != null and issue_sort != ''">
+            AND issue_sort = #{issue_sort}
+        </if>
+        <if test="category_key != null and category_key != ''">
+            AND category_key = #{category_key}
+        </if>
+        <if test="issue_at != null and issue_at != ''">
+            AND issue_at = #{issue_at}
+        </if>
+     
+        
+       
+        ORDER BY due_date DESC ) x 
+        WHERE x.rnum BETWEEN #{begin} and #{end}
+    </select>
+    
+    <!-- 관리자용 화면용 -->
+	<select id="searchForAdminPaging" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM coupon
+		 WHERE 1 = 1
+		 <if test="c_name != null and c_name != ''">
+            AND c_name LIKE CONCAT('%', #{c_name}, '%')
+        </if>
+        <if test="d_type != null and d_type != ''">
+		    AND d_type = #{d_type}
+		</if>
+        <if test="issue_sort != null and issue_sort != ''">
+            AND issue_sort = #{issue_sort}
+        </if>
+        <if test="category_key != null and category_key != ''">
+            AND category_key = #{category_key}
+        </if>
+        <if test="issue_at != null and issue_at != ''">
+            AND issue_at = #{issue_at}
+        </if>
+	</select>
+	
+	 <insert id ="addCoupon"  parameterType ="map" >
+        INSERT INTO `coupon`
+        	(
+        		`c_name`,
+        		`issue_at`,
+        		`d_type`,
+        		`d_price`,
+        		`issue_sort`,
+        		`due_date`,
+        		`category_key`,
+        		`min_order_price`,
+        		`max_discount`
+        	)
+        VALUES
+        	(
+        		#{c_name},
+        		#{issue_at},
+        		#{d_type},
+        		#{d_price},
+        		#{issue_sort},
+        		#{due_date},
+        		#{category_key},
+        		#{min_order_price},
+        		#{max_discount} 	
+        	)
+        </insert>
+        
+    	<select id="getCouponByKey" resultType="vo.CouponVO" parameterType="String">
+			SELECT * FROM coupon
+		 	WHERE c_idx = #{c_idx}
+		</select>
+        
+        <update id ="editCoupon"  parameterType ="map" >
+        UPDATE `coupon`
+          SET
+        		`c_name` = #{c_name},
+        		`issue_at`= #{issue_at},
+        		`d_type`=#{d_type},
+        		`d_price`=#{d_price},
+        		`issue_sort`=#{issue_sort},
+        		`due_date`=#{due_date},
+        		`category_key`=#{category_key},
+        		`min_order_price`= #{min_order_price},
+        		`max_discount`= #{max_discount}
+        	WHERE 
+        		`c_idx` = #{c_idx}
+        </update>
+        
+        <delete id="deleteCoupon" parameterType="map">
+        DELETE FROM `coupon`
+        WHERE `c_idx` = #{c_idx}
+        </delete>
+</mapper>

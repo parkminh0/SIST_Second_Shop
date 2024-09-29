@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  <environments default="">
+    <environment id="">
+      <transactionManager type="JDBC"/>
+      <dataSource type="POOLED">
+        <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/shop"/>
+        <property name="username" value="root"/>
+        <property name="password" value="1111"/>
+      </dataSource>
+    </environment>
+  </environments>
+  <mappers>
+    <mapper resource="mapper/user.xml"/>
+    <mapper resource="mapper/basket.xml"/>
+    <mapper resource="mapper/interest.xml"/>
+    <mapper resource="mapper/bbs.xml"/>
+    <mapper resource="mapper/bfile.xml"/>
+    <mapper resource="mapper/comm.xml"/>
+    <mapper resource="mapper/coupon.xml"/>
+    <mapper resource="mapper/couponlist.xml"/>
+    <mapper resource="mapper/category.xml"/>
+    <mapper resource="mapper/product.xml"/>
+    <mapper resource="mapper/option.xml"/>
+    <mapper resource="mapper/order.xml"/>
+    <mapper resource="mapper/orderlist.xml"/>
+    <mapper resource="mapper/orderdetail.xml"/>
+    <mapper resource="mapper/index.xml"/>
+    <mapper resource="mapper/u_grade.xml"/>
+    <mapper resource="mapper/delivery.xml"/>
+	<mapper resource="mapper/orderstatus.xml"/>	
+	<mapper resource="mapper/brand.xml"/>	
+  </mappers>
+</configuration>

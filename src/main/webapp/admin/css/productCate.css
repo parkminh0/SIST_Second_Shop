@@ -1,0 +1,466 @@
+@charset "UTF-8";
+
+#content {
+	width: 100%;
+	height: 100%;
+    min-height: 750px;
+    min-width: 960px;
+    padding: 24px 24px 100px;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+.categorySetArea .gFlow .mTitle {
+    z-index: 10;
+}
+.mTitle {
+    position: relative;
+    margin: 18px 0 8px;
+}
+
+.mTitle h2 {
+    display: inline-block;
+    padding: 0 5px 0 0;
+    color: #1b1e26;
+    font-size: 16px;
+    line-height: 1.5;
+    vertical-align: middle;
+}
+
+.categorySetArea {
+    padding: 0 0 0 330px;
+}
+
+.categorySetArea .gFlow {
+    float: left;
+    width: 318px;
+    margin: 0 0 0 -330px;
+}
+
+.section {
+    margin: 0 0 24px;
+}
+
+.categorySetArea #eSubmitNode {
+    position: relative;
+}
+
+.categorySetArea .mCtrl.typeHeader {
+    position: static;
+}
+.categorySetArea .mCtrl {
+    padding: 13px 10px;
+    background-color: #e3e3e3;
+}
+.mCtrl.typeHeader {
+    position: relative;
+    z-index: 1;
+    margin-bottom: -1px;
+}
+.mCtrl {
+    min-height: 46px;
+    padding: 8px;
+    border: 1px solid #d9dadc;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: #fff;
+}
+
+.mCtrl .gLeft {
+    float: left;
+    text-align: left;
+}
+
+.btnNormal, .btnNormal span {
+    height: 28px;
+}
+[class^="btn"], [class^="btn"] span {
+    cursor: pointer;
+}
+
+.btnNormal, .btnNormal span, .btnCtrl, .btnCtrl span, .btnDate, .btnDate span, .btnGeneral, .btnGeneral span, .btnStrong, .btnStrong span, .btnSubmit, .btnSubmit span, .btnEm, .btnEm span, .btnSearch, .btnSearch span, .btnToggle {
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+a {
+    text-decoration: none;
+    color: #1b1e26;
+}
+
+html:lang(ko) .btnNormal span {
+    font-size: 13px;
+}
+.btnNormal span {
+    padding: 0 8px;
+    border: 1px solid #aeb4c6;
+    font-size: 12px;
+    line-height: 26px;
+    color: #1b1e26;
+    font-weight: normal;
+    background-color: #fff;
+}
+
+.btnNormal, .btnNormal span {
+    height: 28px;
+}
+[class^="btn"], [class^="btn"] span {
+    cursor: pointer;
+}
+.btnNormal span, .btnCtrl span, .btnDate span, .btnGeneral span, .btnStrong span, .btnSubmit span, .btnEm span, .btnSearch span {
+    vertical-align: top;
+}
+
+.btnNormal, .btnNormal span, .btnCtrl, .btnCtrl span, .btnDate, .btnDate span, .btnGeneral, .btnGeneral span, .btnStrong, .btnStrong span, .btnSubmit, .btnSubmit span, .btnEm, .btnEm span, .btnSearch, .btnSearch span, .btnToggle {
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+.mCtrl .gRight {
+    float: right;
+    text-align: right;
+}
+
+.btnCtrl, .btnCtrl span {
+    height: 28px;
+}
+
+html:lang(ko) .btnCtrl span {
+    font-size: 13px;
+}
+.btnCtrl span {
+    padding: 0 8px;
+    border: 1px solid transparent;
+    font-size: 12px;
+    line-height: 26px;
+    color: #fff;
+    font-weight: normal;
+    background-color: #444b59;
+}
+.btnCtrl, .btnCtrl span {
+    height: 28px;
+}
+[class^="btn"], [class^="btn"] span {
+    cursor: pointer;
+}
+
+.categorySetArea .mCategorySet {
+    position: relative;
+    overflow: auto;
+    height: 400px;
+    padding: 0 0 7px 0;
+    border: 1px solid #a4a7ac;
+}
+
+.categorySetArea .mCategorySet .notice {
+    margin: 8px 5px 2px 5px;
+    padding: 8px 0 7px 0;
+    border: 1px dashed #81aee3;
+    font-size: 11px;
+    letter-spacing: 0;
+    color: #608ac3;
+    text-align: center;
+    background: #ecf3fb;
+}
+
+.dynatree-container {
+    position: relative;
+    padding: 3px;
+}
+
+.dynatree-container > li {
+    background-image: none;
+}
+.dynatree-container li {
+    float: left;
+    background: url(//img.echosting.cafe24.com/ec/product/bg_categoryset_line.gif) repeat-y 0 0;
+}
+li {
+    list-style: none;
+}
+
+.dynatree-container .dynatree-node {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.dynatree-container > li > .dynatree-exp-e .dynatree-expander {
+    background-position: -18px -3px;
+}
+
+.dynatree-expander {
+    display: inline-block;
+    width: 36px;
+    height: 33px;
+    vertical-align: middle;
+    background-image: url(//img.echosting.cafe24.com/ec/product/sfix_categoryset.png);
+    background-repeat: no-repeat;
+}
+
+.dynatree-active .dynatree-contents {
+    border-color: #4579bc;
+    background-color: #6b9edf;
+    background-position: -194px 50%;
+}
+.dynatree-contents {
+    display: inline-block;
+    width: 175px;
+    margin: 3px 0;
+    padding: 6px 5px 5px 14px;
+    border: 1px solid #9e9e9e;
+    line-height: 14px;
+    vertical-align: middle;
+    background: #f3f3f3 url(//img.echosting.cafe24.com/ec/product/sflex_category_handler.png) no-repeat 6px 50%;
+}
+
+.dynatree-active .dynatree-contents a {
+    color: #fff;
+}
+.dynatree-container a {
+    display: inline-block;
+    max-width: 110px;
+    margin: 0 7px 0 0;
+    color: #545454;
+    vertical-align: top;
+    text-decoration: none;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.dynatree-adder {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    margin: 3px 0;
+    border: 1px solid #4579bc;
+    border-left: 0;
+    font-size: 0;
+    line-height: 0;
+    vertical-align: top;
+    cursor: pointer;
+    background: #6b9edf url(//img.echosting.cafe24.com/ec/product/sfix_categoryset.png) no-repeat -95px 0;
+}
+
+.dynatree-container ul {
+    padding: 0 0 0 21px;
+}
+
+.dynatree-container li.dynatree-lastsib {
+    background-image: none;
+}
+.dynatree-container li:last-child {
+    background: none;
+}
+.dynatree-container li {
+    float: left;
+    background: url(//img.echosting.cafe24.com/ec/product/bg_categoryset_line.gif) repeat-y 0 0;
+}
+li {
+    list-style: none;
+}
+
+.dynatree-expander, .dynatree-exp-cl.dynatree-has-children .dynatree-expander {
+    background-position: 0 -89px;
+}
+
+.dynatree-expander {
+    display: inline-block;
+    width: 36px;
+    height: 33px;
+    vertical-align: middle;
+    background-image: url(//img.echosting.cafe24.com/ec/product/sfix_categoryset.png);
+    background-repeat: no-repeat;
+}
+
+.dynatree-contents {
+    display: inline-block;
+    width: 175px;
+    margin: 3px 0;
+    padding: 6px 5px 5px 14px;
+    border: 1px solid #9e9e9e;
+    line-height: 14px;
+    vertical-align: middle;
+    background: #f3f3f3 url(//img.echosting.cafe24.com/ec/product/sflex_category_handler.png) no-repeat 6px 50%;
+}
+
+.mCtrl.typeFooter {
+    margin: -1px 0 0 0;
+}
+
+.categorySetArea .ctrlHeight {
+    display: block;
+    width: 100%;
+    height: 20px;
+    text-align: center;
+    border: 0;
+    cursor: s-resize;
+    background: url(//img.echosting.cafe24.com/ec/product/bg_ctrl_height.gif) repeat-x 0 0;
+}
+
+.ctrlHeight {
+    width: 100%;
+    height: 19px;
+    border: 1px solid #bcbfc4;
+    border-top: 0;
+    text-align: center;
+    box-sizing: border-box;
+    cursor: s-resize;
+    background: url(//img.echosting.cafe24.com/suio/bg_ctrl_height.gif) repeat-x 0 0;
+}
+
+.categorySetArea .ctrlHeight span {
+    display: inline-block;
+    width: 18px;
+    height: 10px;
+    margin: 5px 0 0 0;
+    font-size: 0;
+    line-height: 0;
+    background: url(//img.echosting.cafe24.com/ec/product/sflex_categoryset_ico.png) no-repeat -32px -400px;
+}
+
+.ctrlHeight span {
+    display: inline-block;
+    width: 18px;
+    height: 10px;
+    margin: 4px 0 0;
+    font-size: 0;
+    line-height: 0;
+    vertical-align: top;
+    background: url(//img.echosting.cafe24.com/suio/ico_ctrl_height.png) no-repeat;
+}
+
+.categorySetArea .gReverse {
+    float: left;
+    width: 100%;
+}
+
+.section {
+    margin: 0 0 24px;
+}
+
+.mBoard table {
+    border-top: 1px solid #d9dadc;
+}
+.mBoard table {
+    line-height: 1.5;
+    background-color: #fff;
+}
+table {
+    table-layout: fixed;
+    width: 100%;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.mBoard.gSmall th {
+    width: 135px;
+}
+.mBoard tbody th {
+    border: 1px solid #d9dadc;
+    text-align: left;
+}
+.mBoard th {
+    font-weight: normal;
+    background-color: #fafafb;
+}
+.mBoard th, .mBoard td {
+    padding: 9px 9px 7px;
+    vertical-align: top;
+}
+
+.mBoard.gSmall td {
+    width: auto;
+}
+.mBoard tfoot > tr > th, .mBoard tbody > tr > td {
+    border-top-width: 0;
+}
+.mBoard tbody td {
+    border: 1px solid #d9dadc;
+}
+.mBoard th, .mBoard td {
+    padding: 9px 9px 7px;
+    vertical-align: top;
+}
+th, td {
+    border: 0;
+    word-wrap: break-word;
+}
+
+.dynatree-exp-el .dynatree-expander {
+    background-position: -46px -89px;
+}
+.dynatree-expander, .dynatree-exp-cl.dynatree-has-children .dynatree-expander {
+    background-position: 0 -89px;
+}
+.dynatree-expander {
+    display: inline-block;
+    width: 36px;
+    height: 33px;
+    vertical-align: middle;
+    background-image: url(//img.echosting.cafe24.com/ec/product/sfix_categoryset.png);
+    background-repeat: no-repeat;
+}
+
+.dynatree-expander, .dynatree-exp-cl.dynatree-has-children .dynatree-expander {
+    background-position: 0 -89px;
+}
+
+.dynatree-connector {
+    display: inline-block;
+    width: 36px;
+    height: 33px;
+    vertical-align: middle;
+    background: url(//img.echosting.cafe24.com/ec/product/sfix_categoryset.png) no-repeat -92px -46px;
+}
+
+.dynatree-active .dynatree-contents {
+    border-color: #4579bc;
+    background-color: #6b9edf;
+    background-position: -194px 50%;
+}
+
+.dynatree-active .dynatree-adder {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    margin: 3px 0;
+    border: 1px solid #4579bc;
+    border-left: 0;
+    font-size: 0;
+    line-height: 0;
+    vertical-align: top;
+    cursor: pointer;
+    background: #6b9edf url(//img.echosting.cafe24.com/ec/product/sfix_categoryset.png) no-repeat -95px 0;
+}
+.dynatree-adder {
+    display: none;
+}
+
+.mBoard table {
+    border-top: 1px solid #d9dadc;
+}
+.mBoard table {
+    line-height: 1.5;
+    background-color: #fff;
+}
+table {
+    table-layout: fixed;
+    width: 100%;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}

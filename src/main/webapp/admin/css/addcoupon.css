@@ -1,0 +1,277 @@
+@charset "UTF-8";
+
+html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td, img {
+    margin: 0;
+    padding: 0;
+}
+
+.logo {
+    margin: 20% 0;
+}
+
+#content {
+    min-height: 750px;
+    min-width: 550px;
+    padding: 24px 24px 100px;
+    vertical-align: top;
+    box-sizing: border-box;
+    width : auto;
+}
+
+#wrap.beta .gHeading {
+    padding: 0;
+}
+
+.gHeading {
+    position: relative;
+    padding: 40px 0 0;
+    margin: 0 0 16px;
+}
+
+#wrap.beta .gHeading .mTitle {
+    display: flex;
+    align-items: center;
+}
+
+.gHeading .mTitle {
+    position: relative;
+    margin: 0;
+}
+
+#wrap.beta .mPath {
+    display: none;
+}
+
+.gHeading .mPath {
+    position: absolute;
+    left: 0;
+    top: 16px;
+}
+
+#mCouponListClone, #mNoCouponListClone, .fTargetSelect, #mBatchManage, .mManageissue, .mManagedelete {
+    display: none;
+}
+.gSelectList {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.gSelectList li {
+    margin-right: 20px;
+}
+
+.fChk {
+    display: inline-flex;
+    align-items: center;
+}
+.fChk input[type="radio"], .fChk input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    vertical-align: -2px;
+    margin: 0 2px 0 0;
+}
+
+.addInput {
+    display: flex;
+    align-items: center;
+}
+
+.addInput input[type="text"] {
+    margin-right: 5px;
+}
+.addInput select {
+    margin-right: 3px;
+}
+
+.section {
+    margin: 0 0 30px;
+}
+
+.mTitle {
+    margin: 18px 0 10px;
+}
+
+.mRequired {
+    margin-top: -20px;
+    margin-top: -22px \0/;
+    padding: 0 0 6px;
+    color: #898989;
+    font-size: 11px;
+    letter-spacing: 0;
+    line-height: 140%;
+    text-align: right;
+}
+
+.mBoard table {
+    border: 1px solid #dadadc;
+    border-top: 0;
+    background-color: #fff;
+}
+
+tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    unicode-bidi: isolate;
+    border-color: inherit;
+}
+
+tr {
+    display: table-row;
+    vertical-align: inherit;
+    unicode-bidi: isolate;
+    border-color: inherit;
+}
+
+.mBoard tbody th:first-child, .mBoard tbody td:first-child {
+    border-left: 0;
+}
+
+.mBoard.gMedium th {
+    width: 153px;
+}
+
+.mBoard.gMedium td {
+    width: auto;
+    min-width: 210px;
+}
+
+.mBoard tbody td {
+    padding: 10px 10px 7px;
+}
+
+.mBoard tbody th, .mBoard tbody td {
+    border-left: 1px solid #ebebeb;
+    border-top: 1px solid #ebebeb;
+    line-height: 140%;
+}
+
+th, td {
+    border: 0;
+    word-wrap: break-word;
+}
+
+td .gSelectList {
+    margin: -8px 0 0;
+}
+
+td .gSelectList li {
+    margin: 8px 0 0;
+}
+
+li {
+    list-style: none;
+}
+
+.mBoard tbody td label {
+    display: inline-block;
+    padding-right: 20px;
+    line-height: 18px;
+}
+
+.eSelected {
+    font-weight: bold;
+    letter-spacing: -1px;
+}
+
+html:lang(ko) input, html:lang(ko) select, html:lang(ko) textarea, html:lang(ko) button {
+    font-size: 13px;
+    letter-spacing: -0.5px;
+}
+
+table {
+    width: 100%;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.mLayer.gMedium {
+    width: 500px;
+}
+
+.mButton a {
+    margin-left: 9px;
+}
+
+.btnGeneral, .btnGeneral span {
+    height: 34px;
+}
+
+.btnGeneral span {
+    padding: 0 21px;
+    color: #1c1c1c;
+    font-size: 14px;
+    line-height: 30px;
+    border: 1px solid #cacaca;
+    background-color: #f8f8f8;
+}
+
+.mButton {
+    overflow: hidden;
+    position: relative;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.mCtrl {
+    padding: 9px 10px;
+    border: 1px solid #bcbfc4;
+    background-color: #dfe3e6;
+}
+
+.mCtrl .gCtrlLeft {
+    float: left;
+}
+
+.mCtrl .gCtrlRight {
+    float: right;
+}
+
+.mResult {
+    position: relative;
+    overflow: hidden;
+    padding: 0 0 7px;
+}
+
+.mBoard.gScroll {
+    position: relative;
+    overflow: auto;
+    height: 1%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.mResult .gSort {
+    float: right;
+}
+
+.btnCtrl em.icoDel {
+    width: 8px;
+    height: 10px;
+    background-position: 0 -150px;
+}
+
+.mBoard.type2 tbody tr:first-child th, .mBoard.type2 tbody tr:first-child td {
+    border-top: 1px solid #dadadc;
+}
+.btnIcon.icoCal {
+    width: 13px;
+    height: 13px;
+    background-position: 0 -69px;
+    vertical-align: middle;
+}
+.btnIcon.icoPreview, .btnIcon.icoModify, .btnIcon.icoCal, .btnIcon.icoError {
+    display: inline-block;
+    overflow: hidden;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+    background-image: url(//img.echosting.cafe24.com/smartAdmin/img/common/sfix_btn2.png);
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}

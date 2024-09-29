@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orderstatus">
+	
+	
+	<resultMap type="vo.OrderStatusVO" id="map1">
+		<!-- 기본키설정 -->
+		<result property="od_key" column="od_key"/>
+		<association property="odvo" javaType="vo.OrderDetailVO" select="orderdetail.getOdvo" column="od_key" />
+	</resultMap>
+	
+	<resultMap type="vo.OrderVO" id="map2">
+		<!-- 기본키설정 -->
+		<id property="order_key" column="order_key"/>
+		<result property="delivery_key" column="delivery_key" />
+		<association property="d_status" javaType="String" select="delivery.getStatus" column="delivery_key" />
+	</resultMap>
+	
+	<select id="olist_o" resultMap="map2" parameterType="Map">
+		SELECT distinct o.*
+		FROM `order` as o
+		JOIN `order_detail` as od ON od.order_key = o.order_key
+		JOIN `order_status` as os ON os.od_key = od.od_key
+		WHERE o.u_idx = #{u_idx}
+		AND order_dtm BETWEEN #{start_date} AND #{end_date}
+		<if test="os_option != 0">
+			AND os_option = #{os_option}
+		</if>
+	</select>
+	
+	<select id="olist_os" resultMap="map1" parameterType="Map">
+		SELECT os.*
+		FROM `order_status` as os
+		JOIN `order_detail` as od ON od.od_key = os.od_key
+		WHERE od.order_key = #{order_key}
+		<if test="os_option != 0">
+			AND os.os_option = #{os_option}
+		</if>
+	</select>
+	
+	<select id="getByOdKey" resultType="vo.OrderStatusVO" parameterType="Map">
+		SELECT * FROM `order_status`
+		WHERE od_key = #{od_key}
+	</select>	
+	
+	
+</mapper>
+
+
+
+
+
+
+

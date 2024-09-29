@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bbs">
+
+	<resultMap type="vo.BbsVO" id="map1">
+		<!-- 기본키설정 -->
+		<id property="b_idx" column="b_idx"/>
+		<result property="u_idx" column="u_idx"/>
+		<association property="uvo" javaType="vo.UserVO" select="user.check_idx" column="u_idx" />
+		<collection property="c_list"  ofType="vo.CommVO" select="comm.comm_list" column="b_idx"/>
+		<collection property="b_list"  ofType="vo.BfileVO" select="bfile.file_list" column="b_idx"/>
+	</resultMap>
+	
+	<!-- 해당 게시물의 전체게시물 수를 반환 -->
+	<select id="count" resultType="int" parameterType="String">
+		SELECT COUNT(*) FROM board
+		WHERE status = 0 AND bc_key = #{bc_key}
+	</select>	
+	
+	<select id="s_count" resultType="int" parameterType="String">
+		SELECT COUNT(*) FROM board
+		WHERE status = 0 AND bc_key = #{bc_key}
+		<if test="searchType == 'title'">
+			AND title LIKE concat('%',#{keyword},'%')
+		</if>
+		<if test="searchType == 'content'">
+			AND content LIKE concat('%',#{keyword},'%')
+		</if>
+		<if test="searchType == 'u_idx'">
+			AND u_idx = #{keyword}
+		</if>
+	</select>
+
+	<!-- 게시물 목록을 만들기 위한 select -->
+	<select id="list" resultMap="map1" 
+	parameterType="Map">
+		SELECT x.* 
+    	FROM (	SELECT *, row_number() over (order by b_idx desc) rnum
+          		FROM board
+          		WHERE 1 = 1
+          		AND status = 0
+				AND bc_key = #{bc_key}
+				ORDER BY b_idx DESC) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	
+	<select id="userbbslist" resultMap="map1" 
+	parameterType="Map">
+		SELECT * FROM(
+			SELECT @RN:=@RN+1 AS rnum, a.* FROM(
+				SELECT * FROM board
+				WHERE status = 0 AND u_idx = #{u_idx}
+				ORDER BY b_idx DESC
+			) a, (SELECT @RN:=0) b
+		) c WHERE c.rnum BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="s_list" resultMap="map1" 
+	parameterType="Map">
+		SELECT * FROM(
+			SELECT @RN:=@RN+1 AS rnum, a.* FROM(
+				SELECT * FROM board
+				WHERE status = 0 AND bc_key = #{bc_key}
+				<if test="searchType == 'title'">
+					AND title LIKE concat('%',#{keyword},'%')
+				</if>
+				<if test="searchType == 'content'">
+					AND content LIKE concat('%',#{keyword},'%')
+				</if>
+				<if test="searchType == 'name'">
+					AND u_idx IN (SELECT u_idx
+								 FROM user
+								 WHERE name LIKE concat('%',#{keyword},'%'))
+				</if>
+				ORDER BY b_idx DESC
+			) a, (SELECT @RN:=0) b
+		) c WHERE c.rnum BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<!-- 원글저장 -->
+	<insert id="add" parameterType="Map" useGeneratedKeys="true" keyProperty="b_idx" >
+		INSERT INTO board(title, u_idx, content, crt_dtm, hit, bc_key, up, status)
+		VALUES(#{title}, #{u_idx}, #{content},NOW(), 0, #{bc_key}, 0, 0)
+	</insert>	
+	
+	<select id="view" parameterType="String" resultMap="map1">
+		select * from board
+		where b_idx = #{b_idx}
+	</select>
+	
+	<update id="del" parameterType="String">
+		UPDATE board
+		SET status = 1
+		WHERE b_idx = #{b_idx}
+	</update>
+
+	<delete id="delbbs" parameterType="String">
+		delete from board_category
+		WHERE bc_key = #{bc_key}
+	</delete>
+	
+	<update id="hit" parameterType="String">
+		UPDATE board SET hit = hit + 1 WHERE b_idx = #{b_idx}
+	</update>
+	
+	<update id="up" parameterType="String">
+		UPDATE board SET up = up + 1 WHERE b_idx = #{b_idx}
+	</update>
+	
+	<update id="edit" parameterType="Map">
+		UPDATE board
+		SET title=#{title},content=#{content},upt_dtm=NOW()
+		WHERE b_idx = #{b_idx}
+	</update>
+	
+	<select id="userbbscount" parameterType="String" resultType="int">
+		select count(*) from board
+		where u_idx = #{u_idx} and status = 0
+	</select>
+	
+	<select id="fulllist" parameterType="String" resultType="vo.BbsVO">
+		select * from board where bc_key = #{bc_key} and status = 0 order by crt_dtm desc limit 3
+	</select>
+	
+	<select id="bbs_category_search" resultType="vo.BoardCategoryVO">
+		select * from board_category
+	</select>
+	
+	<select id="searchbbs" parameterType="map" resultType="vo.BbsVO">
+       SELECT x.*
+        FROM (
+        SELECT b.* , row_number() over (order by b_idx DESC) rnum
+        FROM board b
+        WHERE 1=1
+         <if test="search_type == 'subject'">
+			<if test="title != null and title != ''">
+				AND title LIKE CONCAT('%', #{title}, '%')
+			</if>
+		</if>
+         <if test="search_type == 'content'">
+			<if test="title != null and title != ''">
+				AND content LIKE CONCAT('%', #{title}, '%')
+			</if>
+		</if>
+         <if test="search_type == 'u_idx'">
+			<if test="title != null and title != ''">
+				AND writer_name LIKE CONCAT('%', #{title}, '%')
+			</if>
+		</if>
+        <if test="bc_key != 0">
+            AND bc_key = #{bc_key}+1
+        </if>
+        <if test="start_date != null and start_date != '' and end_date != null and end_date != ''">
+            AND crt_dtm between #{start_date} and #{end_date}
+        </if>
+        ORDER BY crt_dtm DESC ) x 
+        WHERE x.rnum BETWEEN #{begin} and #{end}
+    </select>
+    
+	<select id="searchBbsPaging" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+          FROM board
+         WHERE 1 = 1
+         <if test="search_type == 'subject'">
+			<if test="title != null and title != ''">
+				AND title LIKE CONCAT('%', #{title}, '%')
+			</if>
+		</if>
+         <if test="search_type == 'content'">
+			<if test="title != null and title != ''">
+				AND content LIKE CONCAT('%', #{title}, '%')
+			</if>
+		</if>
+         <if test="search_type == 'u_idx'">
+			<if test="title != null and title != ''">
+				AND writer_name LIKE CONCAT('%', #{title}, '%')
+			</if>
+		</if>
+        <if test="bc_key != 0">
+            AND bc_key = #{bc_key}+1
+        </if>
+        <if test="start_date != null and start_date != '' and end_date != null and end_date != ''">
+            AND crt_dtm between #{start_date} and #{end_date}
+        </if>
+    </select>
+	
+</mapper>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="user">
+	<resultMap type="vo.UserVO" id="map1">
+		<id property="u_idx" column="u_idx"/>
+		<collection property="basket_list" ofType="vo.BasketVO" select="basket.search" column="u_idx"/>
+		<collection property="coupon_list" ofType="vo.CouponlistVO" select="couponlist.search" column="u_idx"/>
+		<collection property="interest_list" ofType="vo.InterestVO" select="interest.search" column="u_idx"/>
+		<collection property="order_list" ofType="vo.OrderVO" select="order.user_wlist" column="u_idx"/>
+	</resultMap>
+  <!-- 로그인 -->
+  <select id="login" parameterType="Map" resultMap="map1">
+  	SELECT * FROM user
+  	WHERE id = #{id} AND pw = #{pw} AND del = 0
+  </select>
+  
+  <!-- 관리자로그인 -->
+  <select id="adminLogin" parameterType="map" resultType="vo.UserVO">
+  	SELECT * FROM user
+  	 WHERE id = #{id} AND pw = #{pw} AND del = 0 AND admin = 1
+  </select>
+  
+  <!-- 회원 가입 -->
+  <insert id="add" parameterType="vo.UserVO">
+  	INSERT INTO user(ug_idx,id ,  pw, admin,name, email,phone,addr,addr_detail,sex,btd,zip_code,reg_dtm,del, total_spend, total_mile, avail_mile)
+  	VALUES (1, #{id},#{pw}, 0, #{name},#{email},#{phone},#{addr},#{addr_detail},#{sex},#{btd},#{zip_code},now(),0, 0, 0, 0)
+  </insert>
+  
+	<!-- 아이디체크 -->
+	<select id="check_id" resultType="vo.UserVO" parameterType="String">
+		SELECT * from user
+		WHERE id = #{id}
+	</select>
+	
+	<!-- 유저정보 -->
+	<select id="check_idx" resultType="vo.UserVO" parameterType="String">
+		SELECT * from user
+		WHERE u_idx = #{u_idx}
+	</select>
+	
+	<!-- id로 유저 이름 가져오기 -->
+	<select id="getNameById" resultType="String" parameterType="String">
+		SELECT name from user
+		WHERE id = #{id}
+	</select>
+	
+	<!-- 회원정보 수정 -->
+	<update id="modify" parameterType="vo.UserVO">
+		UPDATE user
+		   SET id = #{id},
+		       pw = #{pw},
+		       name = #{name} ,
+			   zip_code = #{zip_code},
+			   addr = #{addr},
+			   addr_detail = #{addr_detail},
+			   phone = #{phone},
+			   email = #{email},
+			   sex = #{sex},
+			   btd = #{btd}
+
+		 WHERE u_idx = #{u_idx}
+	</update>
+
+	<!-- 회원탈퇴 -->
+	<update id="del" parameterType="map">
+		UPDATE user
+		   SET del = 1,
+		   	   del_dtm = now(),
+		   	   del_reason = #{del_reason}
+		 WHERE u_idx = #{u_idx}
+	</update>
+	
+	<select id="find_info" resultType="String" parameterType="vo.UserVO">
+		SELECT id
+		FROM `user`
+		WHERE name = #{name} AND email = #{email}
+	</select>
+	
+	<update id="change_pw" parameterType="Map">
+		UPDATE user
+		   SET pw = #{pw}
+		 WHERE id = #{id}
+	</update>
+	
+	<select id="user_info" parameterType="String" resultType="vo.UserVO">
+		select name, addr, addr_detail, zip_code,phone, email from user where u_idx = #{u_idx}
+	</select>
+	
+	<!-- 관리자용 화면용 -->
+	<select id="countForAdmin" resultType="vo.admin.UserCountVO">
+		SELECT COUNT(*) cntAll, 
+			   COUNT(CASE WHEN del = 0 THEN 1 END) cntNotDel,
+		       COUNT(CASE WHEN del = 1 THEN 1 END) cntDel
+		  FROM user
+		 WHERE admin = 0
+	</select>
+	
+	<!-- 관리자용 화면용 -->
+	<select id="searchForAdminPaging" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM user
+		 WHERE admin = 0
+		 <if test="type != ''">
+		 	<choose>
+		 		<when test="search_type == 'name'">AND name LIKE CONCAT('%', #{type}, '%')</when>
+		 		<when test="search_type == 'id'">AND id LIKE CONCAT('%', #{type}, '%')</when>
+		 		<when test="search_type == 'email'">AND email LIKE CONCAT('%', #{type}, '%')</when>
+		 		<when test="search_type == 'phone'">AND phone LIKE CONCAT('%', #{type}, '%')</when>
+		 		<when test="search_type == 'addr'">AND addr LIKE CONCAT('%', #{type}, '%')</when>
+		 	</choose>
+		 </if>
+		 <if test="grade != 0">
+		 	AND ug_idx = #{grade}
+		 </if>
+		 <if test="regist_start_date != '' and regist_end_date != ''">
+		 	AND reg_dtm BETWEEN #{regist_start_date} AND #{regist_end_date}
+		 </if>
+		 <if test="regist_start_date != '' and regist_end_date == ''">
+		 	AND reg_dtm <![CDATA[>=]]>  #{regist_start_date}
+		 </if>
+		 <if test="regist_start_date == '' and regist_end_date != ''">
+		 	AND reg_dtm <![CDATA[<=]]>  #{regist_end_date}
+		 </if>
+		 
+		 <if test="del != 2">
+			 	AND del = #{del}
+		 </if>
+			 
+		 <if test="age1 != '' and age2 != ''">
+		 	AND TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(btd)) / 365, 0) BETWEEN #{age1} AND #{age2}
+		 </if>
+		 <if test="age1 != '' and age2 == ''">
+		 	AND TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(btd)) / 365, 0) <![CDATA[>=]]> #{age1}
+		 </if>
+		 <if test="age1 == '' and age2 != ''">
+		 	AND TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(btd)) / 365, 0) <![CDATA[<=]]> #{age2}
+		 </if>
+		 <if test="gender != 2">
+		 	AND sex = #{gender}
+		 </if>
+		 <if test="sales_type == 1">
+		 </if>
+		 <if test="sales_type == 2">
+		 </if>
+	</select>
+	
+	<resultMap type="vo.UserVO" id="map2">
+		<id property="u_idx" column="u_idx"/>
+		<association property="ugvo" javaType="vo.UgradeVO" select="u_grade.search" column="ug_idx"/>
+	</resultMap>
+	<!-- 관리자용 화면용 -->
+	<select id="searchForAdmin" parameterType="map" resultMap="map2">
+		SELECT x.*
+	      FROM ( SELECT *, row_number() over (order by u_idx DESC) rnum FROM user
+			 WHERE admin = 0
+			 <if test="type != ''">
+			 	<choose>
+			 		<when test="search_type == 'name'">AND name = #{type}</when>
+			 		<when test="search_type == 'id'">AND id = #{type}</when>
+			 		<when test="search_type == 'email'">AND email = #{type}</when>
+			 		<when test="search_type == 'phone'">AND phone = #{type}</when>
+			 		<when test="search_type == 'addr'">AND addr = #{type}</when>
+			 	</choose>
+			 </if>
+			 <if test="grade != 0">
+			 	AND ug_idx = #{grade}
+			 </if>
+			 <if test="regist_start_date != '' and regist_end_date != ''">
+			 	AND reg_dtm BETWEEN #{regist_start_date} AND #{regist_end_date}
+			 </if>
+			 <if test="regist_start_date != '' and regist_end_date == ''">
+			 	AND reg_dtm <![CDATA[>=]]>  #{regist_start_date}
+			 </if>
+			 <if test="regist_start_date == '' and regist_end_date != ''">
+			 	AND reg_dtm <![CDATA[<=]]>  #{regist_end_date}
+			 </if>
+			 
+			 <if test="del != 2">
+			 	AND del = #{del}
+			 </if>
+			 
+			 <if test="age1 != '' and age2 != ''">
+			 	AND TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(btd)) / 365, 0) BETWEEN #{age1} AND #{age2}
+			 </if>
+			 <if test="age1 != '' and age2 == ''">
+			 	AND TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(btd)) / 365, 0) <![CDATA[>=]]> #{age1}
+			 </if>
+			 <if test="age1 == '' and age2 != ''">
+			 	AND TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(btd)) / 365, 0) <![CDATA[<=]]> #{age2}
+			 </if>
+			 <if test="gender != 2">
+			 	AND sex = #{gender}
+			 </if>
+			 <if test="sales_type == 1">
+			 </if>
+			 <if test="sales_type == 2">
+			 </if>
+		) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	
+	
+	<update id="changeGrade" parameterType="Map">
+		UPDATE user
+		SET ug_idx = #{ug_idx}
+		WHERE u_idx = #{u_idx}
+	</update>
+	
+	<!-- 관리자용 회원정보 수정 -->
+	<update id="editUser" parameterType="vo.UserVO">
+		UPDATE user
+		<set>
+        id = #{id},
+        ug_idx = #{ug_idx},
+        pw = #{pw},
+        admin = #{admin},
+        name = #{name},
+        zip_code = #{zip_code},
+        addr = #{addr},
+        addr_detail = #{addr_detail},
+        email = #{email},
+        sex = #{sex},
+        btd = #{btd},
+        phone = #{phone},
+        total_mile = #{total_mile},
+        total_spend = #{total_spend},
+        avail_mile = #{avail_mile},
+        reg_dtm = #{reg_dtm},
+        del = #{del},
+        <if test="del_dtm != null">
+            del_dtm = #{del_dtm},
+        </if>
+        <if test="del_reason != null">
+            del_reason = #{del_reason},
+        </if>
+    	</set>
+		 WHERE u_idx = #{u_idx}
+	</update>
+	
+	<update id="mileupdate" parameterType="map">
+		UPDATE user SET total_mile = total_mile + #{total_mile} WHERE u_idx = #{u_idx}
+	</update>
+	
+	
+</mapper>

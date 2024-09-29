@@ -1,0 +1,84 @@
+@charset "UTF-8";
+
+	/* 공통 */
+	.footer_wrap { position:relative; width:100%; margin:40px 0 0; border-top:2px solid #1e1e1e; }
+    .footer_wrap:after { content:""; display:block; clear:both; }
+
+    #footer { width:100%; max-width:1260px; margin:0 auto; word-break:keep-all; color: #333; font: 12px 'Nanum Gothic','Roboto','Verdana','Open Sans','Dotum','AppleGothic','돋움','Dotum','Helvetica','sans-serif','xeicon' !important; }
+    #footer:after { content:""; display:block; clear:both; }
+	#footer ul { margin:0 0 10px; font-size:0; letter-spacing:0px; }
+	#footer ul li { line-height:22px; font-size:13px; letter-spacing:-0.02em; }
+    #footer ._part { height:100%; min-height:260px; padding:5px 0; vertical-align:top; letter-spacing:-4px; padding-top: 30px;}
+    #footer line { display:block; width:100%; height:0; line-height:0; margin:30px 0; border-top:1px solid #e6e6e6; }
+    #footer line:after { content:""; display:block; clear:both; }
+    #footer .info { color:#999; }
+    #footer i { top:3px; margin:0 2px 0 0; font-size:15px; }
+    #footer .title h4 {height: 50px; line-height: 45px; margin: 0 0 18px; background: url('/shop/layout/footer/img/bar_r_50.png') no-repeat 2px 100%; font-size: 16px; }
+    #footer .title { display: block;  letter-spacing: -1px; }
+	#footer h4 { display: block; margin-block-start: 1.33em; margin-block-end: 1.33em;  margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold; unicode-bidi: isolate; }
+    
+    .company_map_container { display: flex; padding-top: 20px; }
+	.company { width: 35%; background: none; }
+
+	.map { padding-left: 30px; width: 61%; }
+
+	.divider { width: 4%; background: url('/shop/layout/footer/img/bar_b_10.png') repeat-y 100% 0; }
+    
+    
+    /* footer.jsp */
+    .company, .map { display: inline-block; vertical-align: top; }
+    .company { float:left; width:500px; margin:0 2% 15px 2%; background: none; }
+    .company ul{ display: inline-block; margin: 0 20px;}
+	.company li:after { content:""; display:block; clear:both; }
+    .company strong { float:left; width:140px; font-weight:normal; color:#aaa; }
+    .company span { float:right; width:calc(100% - 155px); padding:0 15px 0 0; color:#333; }
+    .company a:hover { color:#111; }
+	.company .listBox{ display: inline-block; }
+	.company .logoImg{ display: inline-block; width:200px; height: 200px; }
+	
+	.end { display:block; position:relative; height:45px; line-height:45px; margin:20px 0 0; background:#1e1e1e; font-family:'Roboto'; font-size:12px; text-align:center; color:#fff; letter-spacing:0.02em; }
+    .end_inner { width:100%; max-width:1260px; margin:0 auto; }
+	.end .copyright { float:left; padding:0 0 0 10px; }
+    .end .made a { display:block; position:relative; float:right; top:7px; width:30px; height:30px; margin:0 10px 0 0; line-height:31px; border-radius:50%; color:#aaa; font-size:11px; font-weight:bold; text-align:center; text-indent:2px; }
+    .end .made a:hover { text-decoration:none; }
+
+
+	/* oper_info.jsp */
+    #footer .oper_time { display:inline-block; width:25%; margin:0 0 0 2%; background:url('/shop/layout/footer/img/bar_b_10.png') repeat-y 100% 0; }
+    #footer .oper_time li { min-height:0; }
+    #footer .oper_time .phone { min-height:0; line-height:25px; margin:0 0 15px; font-family:'Oswald'; font-size:23px; color:#111; letter-spacing:0; }
+    #footer .oper_time strong { min-height:0; padding-right:10px; color:#333; }
+    #footer .oper_time span { min-height:0; }
+    #footer .oper_time .right { vertical-align:top; letter-spacing:0; }
+    #footer .oper_time .right a:first-child { display:none; }
+    #footer .oper_time .right a { width:100%; max-width:60%; margin:0 0 5px; }
+    
+    
+    
+    /* footer_menu.jsp */
+    .menu { display:block; margin:0 0 30px; padding:10px 2%; border-bottom:1px solid #e6e6e6; }
+    .menu ul { margin:0; }
+    .menu li { display:inline-block; padding:0 15px; }
+    .menu li:first-child { padding-left:0; background:none; }
+    .menu li a { line-height:25px; color:#333; font-size:13px; }
+    .menu li a:hover { color:#000; text-decoration:none; font-weight:bold; }
+    
+    
+    
+    /* deli_info.jsp */
+    .delivery { display:inline-block; width:42.8%; margin:0 0 0 2%; background: none;}
+    .delivery strong,
+    .delivery span { margin:0 10px 0 0; }
+    .delivery .v_returnAdd1 { word-break:keep-all; }
+    .delivery .v_returnAdd2 { width:96%; }
+    
+    
+    
+    /* bank_info.jsp */
+    .bank_info { display:inline-block; width:25%; margin:0 0 0 2%; background:url('/shop/layout/footer/img/bar_b_10.png') repeat-y 100% 0; }
+    .bank_info li { min-height:0; }
+    .bank_info strong { min-height:0; }
+    .bank_info span { position:relative; left:10px; min-height:0; }
+	.bank_info .alter { display:inline-block; margin:0 20px 0 0; padding:7px 10px; border:1px solid #eee; background:#f4f4f4; font-size:12px; letter-spacing:0; }
+
+

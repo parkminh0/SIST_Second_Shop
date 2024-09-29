@@ -1,0 +1,23 @@
+INDEX VERSION 1.131
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2407151022.index
+\Ex20240610_MVC_Bbs\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\1675066.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\682425405.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\1439923927.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\492040921.index
+\Ex20240610_MVC_Bbs\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\4128961818.index
+\Ex20240610_MVC_Bbs\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\1951961035.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2767147439.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\800918090.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2268307452.index
+\projShop\src\main\java
+C:\My_Study\2nd_Project\Proj_2\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2907727519.index
+\projShop\src\main\java

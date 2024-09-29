@@ -1,0 +1,42 @@
+@charset "UTF-8";
+#toss_info{
+	width: 700px;
+	height: 70px;
+}
+#orderFixItem.ec-base-button.gFull [class*="btn"] {
+    font-size: 18px;
+    font-weight: 400;
+    height: 50px;
+    line-height: 50px;
+    color: #fff;
+    background-color: #3971FF;
+    margin: 0;
+    border: 0;
+}
+
+
+.coupon {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 2px 8px;
+    border: 1px solid #d1d1d1;
+    border-radius: 2px;
+    font-family: "굴림", Gulim;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: normal;
+    text-decoration: none;
+    vertical-align: middle;
+    word-spacing: -0.5px;
+    letter-spacing: 0;
+    text-align: center;
+    white-space: nowrap;
+    color: #222;
+    background-color: #fff;
+}
+
+.cssmile .ec-base-mail {
+	width: 50%;
+}
+
+

@@ -1,0 +1,957 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="product">
+	<resultMap type="vo.ProductVO" id="map1">
+		<id property="product_key" column="product_key"/>
+		<collection property="option_list" ofType="vo.OptionVO" select="option.getOptionByProduct" column="product_key"/>
+	</resultMap>
+	<select id="getProductByCategory" resultMap="map1" parameterType="map">
+		SELECT x.*
+	      FROM ( SELECT *, row_number() over (order by 
+	      	<choose>
+			    	<when test="orderby == 1"> prod_name </when>
+			    	<when test="orderby == 2"> cell_price </when>
+			    	<when test="orderby == 3"> cell_price DESC </when>
+					<otherwise> product_key DESC </otherwise>
+			</choose>
+	      	) rnum FROM product
+				 WHERE del = 0
+					<if test="depth == 1">
+					AND (category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{category_key}
+				   			)
+				   	     OR category_key = #{category_key}
+				   	     )
+					</if>
+					<if test="depth == 2">
+					AND (category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{category_key}
+						   )
+						   OR category_key = #{category_key}
+				   	     )
+					</if>
+					<if test="depth == 3">
+					AND category_key = #{category_key}
+					</if>
+			  	<choose>
+			    	<when test="orderby == 1"> ORDER BY prod_name </when>
+			    	<when test="orderby == 2"> ORDER BY cell_price </when>
+			    	<when test="orderby == 3"> ORDER BY cell_price DESC </when>
+					<otherwise> ORDER BY product_key DESC </otherwise>
+				</choose> ) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	
+	<select id="getProductByKey" resultMap="map1" parameterType="String">
+		SELECT * FROM product
+		 WHERE product_key = #{product_key}
+	</select>
+	
+	<select id="getProduct" resultMap="map1" parameterType="Map">
+		SELECT * FROM product
+		WHERE product_key = (	SELECT product_key
+		 						FROM `option`
+		 						WHERE option_key = #{option_key}
+		 					)
+	</select>
+	
+	<select id="getproductinfo" resultType="vo.ProductVO" parameterType="String">
+		SELECT * FROM product
+		WHERE product_key = (	SELECT product_key
+		 						FROM `option`
+		 						WHERE option_key = #{option_key}
+		 					)
+	</select>
+	
+	<select id="getProductCount" resultType="int" parameterType="map">
+		SELECT COUNT(*) FROM product
+		 WHERE del = 0
+			<if test="depth == 1">
+			AND (category_key IN (
+				SELECT c3.category_key FROM category c1
+				  JOIN category c2 on c1.category_key = c2.up_category_key
+				  JOIN category c3 on c2.category_key = c3.up_category_key
+				   and c1.category_key = #{category_key}
+		   			) OR category_key = #{category_key}
+		   	     )
+			</if>
+			<if test="depth == 2">
+			AND (category_key IN (
+				SELECT c2.category_key FROM category c1
+				  JOIN category c2 on c1.category_key = c2.up_category_key
+				   and c1.category_key = #{category_key}
+				   ) 
+				   OR category_key = #{category_key}
+				 )
+			</if>
+			<if test="depth == 3">
+			AND category_key = #{category_key}
+			</if>
+	</select>
+	
+	<select id="getSearchProductCount" resultType="int" parameterType="String">
+		SELECT COUNT(*) FROM product
+		 WHERE del = 0 AND prod_name LIKE CONCAT('%',#{keyword},'%')
+	</select>
+	
+	<select id="getProductByKeyword" resultMap="map1" parameterType="map">
+		SELECT x.*
+	    FROM (	SELECT *, row_number() over (
+	      							order by product_key DESC
+	      							) rnum
+	      		FROM product
+				WHERE del = 0 AND prod_name LIKE CONCAT('%',#{keyword},'%') ) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	
+	<select id="countForAdmin" resultType="vo.admin.ProductCountVO">
+		SELECT COUNT(*) cntAll, 
+			   COUNT(CASE WHEN del = 0 THEN 1 END) cntCelling,
+		       COUNT(CASE WHEN stock = 0 THEN 1 END) cntNostock,
+		       COUNT(CASE WHEN del = 1 THEN 1 END) cntNocelling
+		  FROM product
+	</select>
+	
+	<!-- 관리자용 화면용 -->
+	<select id="searchForAdminPaging" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM product
+		 WHERE 1 = 1
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="search2_3 != ''">
+		 	AND category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		 	AND (
+		 			category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR category_key = #{search2_2} 
+				 )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (
+		 			category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR category_key = #{search2_1}
+			    )
+		 </if>
+		 
+		 <if test="start_date != '' and end_date != ''">
+		 	AND create_dtm BETWEEN #{start_date} AND #{end_date}
+		 </if>
+		 <if test="start_date != '' and end_date == ''">
+		 	AND create_dtm <![CDATA[>=]]>  #{start_date}
+		 </if>
+		 <if test="start_date == '' and end_date != ''">
+		 	AND create_dtm <![CDATA[<=]]>  #{end_date}
+		 </if>
+		 
+		 <if test="selling != 2">
+			 	AND del = #{selling}
+		 </if>
+			 
+		 <if test="stock_min != '' and stock_max != ''">
+		 	AND stock BETWEEN #{stock_min} AND #{stock_max}
+		 </if>
+		 <if test="stock_min != '' and stock_max == ''">
+		 	AND stock <![CDATA[>=]]> #{stock_min}
+		 </if>
+		 <if test="stock_min == '' and stock_max != ''">
+		 	AND stock <![CDATA[<=]]> #{stock_max}
+		 </if>
+		 
+		 <if test="soldout_status == 1">
+		 	AND stock = 0
+		 </if>
+		 <if test="soldout_status == 0">
+		 	AND stock > 0
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+	</select>
+	<resultMap type="vo.ProductVO" id="map2">
+		<id property="product_key" column="product_key"/>
+		<association property="cvo" javaType="vo.CategoryVO" select="category.search" column="category_key"/>
+		<collection property="option_list" ofType="vo.OptionVO" select="option.getOptionByProduct" column="product_key"/>
+	</resultMap>
+	<!-- 관리자용 화면용 -->
+	<select id="searchForAdmin" parameterType="map" resultMap="map2">
+		SELECT x.*
+		      FROM ( SELECT *, row_number() over (order by product_key DESC) rnum FROM product
+		 WHERE 1 = 1
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="search2_3 != ''">
+		 	AND category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		 	AND (
+		 			category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR category_key = #{search2_2} 
+				 )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (
+		 			category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR category_key = #{search2_1}
+			    )
+		 </if>
+		 
+		 <if test="start_date != '' and end_date != ''">
+		 	AND create_dtm BETWEEN #{start_date} AND #{end_date}
+		 </if>
+		 <if test="start_date != '' and end_date == ''">
+		 	AND create_dtm <![CDATA[>=]]>  #{start_date}
+		 </if>
+		 <if test="start_date == '' and end_date != ''">
+		 	AND create_dtm <![CDATA[<=]]>  #{end_date}
+		 </if>
+		 
+		 <if test="selling != 2">
+			 	AND del = #{selling}
+		 </if>
+			 
+		 <if test="stock_min != '' and stock_max != ''">
+		 	AND stock BETWEEN #{stock_min} AND #{stock_max}
+		 </if>
+		 <if test="stock_min != '' and stock_max == ''">
+		 	AND stock <![CDATA[>=]]> #{stock_min}
+		 </if>
+		 <if test="stock_min == '' and stock_max != ''">
+		 	AND stock <![CDATA[<=]]> #{stock_max}
+		 </if>
+		 
+		 <if test="soldout_status == 1">
+		 	AND stock = 0
+		 </if>
+		 <if test="soldout_status == 0">
+		 	AND stock > 0
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	
+	<delete id="deleteProduct" parameterType="String">
+		delete from product
+		where product_key = #{product_key}
+	</delete>
+	
+	<update id="updateDel" parameterType="map">
+		update product
+		   SET del = #{mode}
+		 WHERE product_key = #{product_key}
+	</update>
+	
+	<!-- 유저들이 상품 detail 눌렀을 때 조회수 증가하여 db에 update하는 쿼리 -->
+	<update id="viewQtyUp" parameterType="String">
+		UPDATE product 
+		SET view_qty = view_qty + 1 
+		WHERE product_key = #{product_key}
+	</update>
+	
+	<insert id="addProduct" parameterType="map" useGeneratedKeys="true" keyProperty="product_key" keyColumn="product_key">
+		INSERT INTO `product`
+			(
+				`category_key`,
+				`isnew`,
+				`isrecommend`,
+				`prod_name`,
+				`prod_desc1`,
+				`prod_desc2`,
+				`ori_price`,
+				`cell_price`,
+				`img_url`,
+				`stock`,
+				`factory`,
+				`season`,
+				`material`,
+				`alt_text`,
+				`create_dtm`,
+				`view_qty`,
+				`del`
+			)
+		VALUES
+			(
+				#{category_key},
+				<if test="isnew == ''">
+					0,
+				</if>
+				<if test="isnew != ''">
+					1,
+				</if>
+				<if test="isrecommend == ''">
+					0,
+				</if>
+				<if test="isrecommend != ''">
+					1,
+				</if>
+				#{prod_name},
+				#{prod_desc1},
+				#{prod_desc2},
+				#{ori_price},
+				#{cell_price},
+				#{img_url},
+				#{stock},
+				#{factory},
+				#{season},
+				#{material},
+				#{alt_text},
+				now(),
+				0,
+				#{del}
+			)
+	</insert>
+	
+	<update id="editProduct" parameterType="map">
+	UPDATE `product`
+		SET
+			`category_key` = #{category_key},
+			<if test="isnew == ''">
+			`isnew` = 0,
+			</if>
+			<if test="isnew != ''">
+			`isnew` = 1,
+			</if>
+			<if test="isrecommend == ''">
+			`isrecommend` = 0,
+			</if>
+			<if test="isrecommend != ''">
+			`isrecommend` = 1,
+			</if>
+			`prod_name` = #{prod_name},
+			`prod_desc1` = #{prod_desc1},
+			`prod_desc2` = #{prod_desc2},
+			`ori_price` = #{ori_price},
+			`cell_price` = #{cell_price},
+			`img_url` = #{img_url},
+			`stock` = #{stock},
+			`factory` = #{factory},
+			`season` = #{season},
+			`material` = #{material},
+			`alt_text` = #{alt_text},
+			`del` = #{del}
+			WHERE `product_key` = #{product_key}
+	</update>
+	
+	<update id="cateToUnclassified" parameterType="map">
+		UPDATE `product`
+		SET `category_key` = #{un_category_key}
+		WHERE `category_key` = #{category_key}
+	</update>
+	
+	<!-- 관리자 - 통계 - 장바구니 Top10 -->
+	<select id="statistic_product_basket_top" parameterType="map" resultType="vo.admin.statistic_product_basketVO">
+		SELECT row_number() over (order by SUM(b.b_qty) DESC) rnum,
+		       o.product_key, 
+		       p.prod_name, 
+		       p.img_url,
+			   o.size,
+		       o.color,
+		       p.cell_price,
+			   SUM(b.b_qty) as b_qty,
+		       o.prod_stock,
+		       COUNT(*) as u_qty
+		  FROM `basket` b
+		  JOIN `option` o ON b.option_key = o.option_key
+		  JOIN `product` p ON p.product_key = o.product_key
+		 GROUP BY b.option_key
+		 LIMIT 10
+	</select>
+	
+	<!-- 관리자 - 상품분석 - 장바구니 상품 -->
+	<select id="statistic_product_basket" parameterType="map" resultType="vo.admin.statistic_product_basketVO">
+		SELECT x.* 
+		  FROM 
+		(SELECT row_number() over (
+		<if test="rank_by == 1">
+			order by COUNT(*) DESC
+		</if>
+		<if test="rank_by == 2">
+			order by SUM(b.b_qty) DESC
+		</if>
+		) rnum,
+		       o.product_key, 
+		       p.prod_name, 
+		       p.img_url,
+			   o.size,
+		       o.color,
+		       p.cell_price,
+			   SUM(b.b_qty) as b_qty,
+		       o.prod_stock,
+		       COUNT(*) as u_qty
+		  FROM `basket` b
+		  JOIN `option` o ON b.option_key = o.option_key
+		  JOIN `product` p ON p.product_key = o.product_key
+		 WHERE 1 = 1
+		 <if test="search2_3 != ''">
+		   AND category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		   AND (category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR category_key = #{search2_2} 
+			   )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR category_key = #{search2_1}
+				)
+		 </if>
+		 
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 GROUP BY b.option_key
+		 ) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	<!-- 관리자 - 상품분석 - 장바구니 상품 페이징 -->
+	<select id="statistic_product_basket_paging" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM (
+		SELECT row_number() over (order by COUNT(*) DESC) rnum,
+		       o.product_key, 
+		       p.prod_name, 
+		       p.img_url,
+			   o.size,
+		       o.color,
+		       p.cell_price,
+			   SUM(b.b_qty) as b_qty,
+		       o.prod_stock,
+		       COUNT(*) as u_qty
+		  FROM `basket` b
+		  JOIN `option` o ON b.option_key = o.option_key
+		  JOIN `product` p ON p.product_key = o.product_key
+		 WHERE 1 = 1
+		 <if test="search2_3 != ''">
+		   AND category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		   AND (category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR category_key = #{search2_2} 
+			   )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR category_key = #{search2_1}
+				)
+		 </if>
+		 
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 GROUP BY b.option_key) x
+	</select>
+	<!-- 관리자 - 상품분석 - 관심 상품 -->
+	<select id="statistic_product_interest" parameterType="map" resultType="vo.admin.statistic_product_interestVO">
+		SELECT x.* 
+		  FROM 
+		(SELECT row_number() over (order by COUNT(*) DESC) rnum,
+		       p.product_key, 
+		       p.img_url,
+		       p.prod_name, 
+		       p.cell_price,
+		       p.stock,
+		       COUNT(*) as u_qty
+		  FROM `p_interest` i
+		  JOIN `product` p ON p.product_key = i.product_key
+		 WHERE 1 = 1
+		 <if test="search2_3 != ''">
+		   AND p.category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		   AND (p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR p.category_key = #{search2_2} 
+			   )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (p.category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR p.category_key = #{search2_1}
+				)
+		 </if>
+		 
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND p.prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND p.product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND p.factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND p.cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND p.cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND p.ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND p.ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 GROUP BY i.product_key
+		 ) x
+		WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	<!-- 관리자 - 상품분석 - 관심 상품 페이징 -->
+	<select id="statistic_product_interest_paging" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM (
+		SELECT row_number() over (order by COUNT(*) DESC) rnum,
+		       p.product_key, 
+		       p.img_url,
+		       p.prod_name, 
+		       p.cell_price,
+		       p.stock,
+		       COUNT(*) as u_qty
+		  FROM `p_interest` i
+		  JOIN `product` p ON p.product_key = i.product_key
+		 WHERE 1 = 1
+		 <if test="search2_3 != ''">
+		   AND p.category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		   AND (p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR p.category_key = #{search2_2} 
+			   )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (p.category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR p.category_key = #{search2_1}
+				)
+		 </if>
+		 
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND p.prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND p.product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND p.factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND p.cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND p.cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND p.ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND p.ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 GROUP BY i.product_key
+		 ) x
+	</select>
+	
+	<!-- 관리자 - 상품분석 - 판매 상품 -->
+	<select id="statistic_product_cell" parameterType="map" resultType="vo.admin.statistic_product_cellVO">
+		SELECT *
+		  FROM (SELECT 	row_number() over (order by SUM(
+		  <if test="search_by == 1">
+			  od.od_changed_qty
+		  </if>
+		  <if test="search_by == 2">
+		  	  od.od_qty - od.od_changed_qty
+		  </if>
+		  ) DESC) rnum,
+				od.option_key,
+				op.product_key, 
+				p.img_url,
+				p.prod_name, 
+				op.size,
+				op.color,
+				p.cell_price,
+				op.prod_stock,
+				SUM(od.od_qty) AS qty,
+				SUM(od.od_qty - od.od_changed_qty) AS cancel_qty,
+				SUM(od.od_changed_qty) AS changed_qty,
+				SUM(od.od_changed_price) AS changed_price
+		  FROM `option` op
+		  JOIN `product` p ON p.product_key = op.product_key
+		  JOIN `order_detail` od ON od.option_key = op.option_key
+		  JOIN `order` o ON o.order_key = od.order_key
+		  WHERE od.od_confirm = 1
+		  <if test="start_date != '' and end_date != ''">
+		 	AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+		 </if>
+		 <if test="start_date != '' and end_date == ''">
+		 	AND o.order_dtm <![CDATA[>=]]>  #{start_date}
+		 </if>
+		 <if test="start_date == '' and end_date != ''">
+		 	AND o.order_dtm <![CDATA[<=]]>  #{end_date}
+		 </if>
+		 <if test="search2_3 != ''">
+		   AND p.category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		   AND (p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR p.category_key = #{search2_2} 
+			   )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (p.category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR p.category_key = #{search2_1}
+				)
+		 </if>
+		 
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND p.prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND p.product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND p.factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND p.cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND p.cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND p.ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND p.ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 GROUP BY od.option_key
+		 ) x
+		 WHERE x.rnum BETWEEN #{begin} and #{end}
+	</select>
+	<!-- 관리자 - 상품분석 - 판매 상품 페이징 -->
+	<select id="statistic_product_cell_paging" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM (SELECT 	row_number() over (order by SUM(
+		  <if test="search_by == 1">
+			  od.od_changed_qty
+		  </if>
+		  <if test="search_by == 2">
+		  	  od.od_qty - od.od_changed_qty
+		  </if>
+		  ) DESC) rnum,
+				od.option_key,
+				op.product_key, 
+				p.img_url,
+				p.prod_name, 
+				op.size,
+				op.color,
+				p.cell_price,
+				op.prod_stock,
+				SUM(od.od_qty) AS qty,
+				SUM(od.od_qty - od.od_changed_qty) AS cancel_qty,
+				SUM(od.od_changed_qty) AS changed_qty,
+				SUM(od.od_changed_price) AS changed_price
+		  FROM `option` op
+		  JOIN `product` p ON p.product_key = op.product_key
+		  JOIN `order_detail` od ON od.option_key = op.option_key
+		  JOIN `order` o ON o.order_key = od.order_key
+		  WHERE od.od_confirm = 1
+		  <if test="start_date != '' and end_date != ''">
+		 	AND o.order_dtm BETWEEN #{start_date} AND #{end_date}
+		 </if>
+		 <if test="start_date != '' and end_date == ''">
+		 	AND o.order_dtm <![CDATA[>=]]>  #{start_date}
+		 </if>
+		 <if test="start_date == '' and end_date != ''">
+		 	AND o.order_dtm <![CDATA[<=]]>  #{end_date}
+		 </if>
+		 <if test="search2_3 != ''">
+		   AND p.category_key = #{search2_3}
+		 </if>
+		 
+		 <if test="search2_2 != '' and search2_3 == ''">
+		   AND (p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_2}
+				   )  OR p.category_key = #{search2_2} 
+			   )
+		 </if>
+		 
+		 <if test="search2_1 != '' and search2_2 == ''">
+		 	AND (p.category_key IN (
+						SELECT c3.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						  JOIN category c3 on c2.category_key = c3.up_category_key
+						   and c1.category_key = #{search2_1}) 
+			     OR p.category_key IN (
+						SELECT c2.category_key FROM category c1
+						  JOIN category c2 on c1.category_key = c2.up_category_key
+						   and c1.category_key = #{search2_1})
+				 OR p.category_key = #{search2_1}
+				)
+		 </if>
+		 
+		 <if test="search_text != ''">
+		 	<choose>
+		 		<when test="search_type == 'prod_name'">AND p.prod_name LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'product_key'">AND p.product_key LIKE CONCAT('%', #{search_text}, '%')</when>
+		 		<when test="search_type == 'factory'">AND p.factory LIKE CONCAT('%', #{search_text}, '%')</when>
+		 	</choose>
+		 </if>
+		 
+		 <if test="price == product">
+		 	<if test="price_min != '' and price_max != ''">
+		 		AND p.cell_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.cell_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and stock_max != ''">
+			 	AND p.cell_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 <if test="price == buy">
+		 	<if test="price_min != '' and price_max != ''">
+			 	AND p.ori_price BETWEEN #{price_min} AND #{price_max}
+			 </if>
+			 <if test="price_min != '' and price_max == ''">
+			 	AND p.ori_price <![CDATA[>=]]> #{price_min}
+			 </if>
+			 <if test="price_min == '' and price_max != ''">
+			 	AND p.ori_price <![CDATA[<=]]> #{price_max}
+			 </if>
+		 </if>
+		 GROUP BY od.option_key
+		 ) x
+	</select>
+</mapper>

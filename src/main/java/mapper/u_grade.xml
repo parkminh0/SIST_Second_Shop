@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="u_grade">
+	<select id="getList" resultType="vo.UgradeVO">
+		select * from u_grade
+		 order by ug_idx
+	</select>
+	
+	<select id="search" resultType="vo.UgradeVO" parameterType="String">
+		select * from u_grade
+		 where ug_idx = #{ug_idx}
+	</select>
+</mapper>

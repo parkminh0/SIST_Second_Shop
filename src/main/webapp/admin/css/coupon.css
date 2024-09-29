@@ -1,0 +1,133 @@
+@charset "UTF-8";
+
+.logo {
+		margin: 20% 0%;
+	}
+	
+	#content {
+		min-height: 750px;
+		min-width: 960px;
+		padding: 24px 24px 100px;
+		vertical-align: top;
+		box-sizing: border-box;
+	}
+	
+	#wrap.beta .gHeading {
+		padding: 0;
+	}
+	
+	.gHeading {
+		position: relative;
+		padding: 40px 0 0;
+		margin: 0 0 16px;
+	}
+	
+	#wrap.beta .gHeading .mTitle {
+		display: flex;
+		align-items: center;
+	}
+	
+	.gHeading .mTitle {
+		position: relative;
+		margin: 0;
+	}
+	
+	#wrap.beta .mPath {
+		display: none;
+	}
+	
+	.gHeading .mPath {
+		position: absolute;
+		left: 0;
+		top: 16px;
+	}
+	
+	form, fieldset, legend, input, textarea, p, blockquote, th, td, img {
+		margin: 0;
+		padding: 0;
+	}
+	
+	#mCouponListClone, #mNoCouponListClone, .fTargetSelect, #mBatchManage,
+		.mManageissue, .mManagedelete {
+		display: none;
+	}
+	
+	table {
+		width: 100%;
+		border: 0;
+		border-spacing: 0;
+		border-collapse: collapse;
+	}
+	
+	.mLayer.gMedium {
+		width: 500px;
+	}
+	
+	.mButton a {
+		margin-left: 9px;
+	}
+	
+	.btnGeneral, .btnGeneral span {
+		height: 34px;
+	}
+	
+	.btnGeneral span {
+		padding: 0 21px;
+		color: #1c1c1c;
+		font-size: 14px;
+		line-height: 30px;
+		border: 1px solid #cacaca;
+		background-color: #f8f8f8;
+	}
+	
+	.mButton {
+		overflow: hidden;
+		position: relative;
+		margin-top: 10px;
+		text-align: center;
+	}
+	
+	.mCtrl {
+		padding: 9px 10px;
+		border: 1px solid #bcbfc4;
+		background-color: #dfe3e6;
+	}
+	
+	.mCtrl .gCtrlLeft {
+		float: left;
+	}
+	
+	.mCtrl .gCtrlRight {
+		float: right;
+	}
+	
+	.mResult {
+		position: relative;
+		overflow: hidden;
+		padding: 0 0 7px;
+	}
+	
+	.mBoard.gScroll {
+		position: relative;
+		overflow: auto;
+		height: 1%;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+	
+	.mBoard table {
+		border: 1px solid #dadadc;
+		border-top: 0;
+		background-color: #fff;
+	}
+	
+	.mResult .gSort {
+		float: right;
+	}
+	
+	.btnCtrl em.icoDel {
+		width: 8px;
+		height: 10px;
+		background-position: 0 -150px;
+	}

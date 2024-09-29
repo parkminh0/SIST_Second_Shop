@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bfile">
+	<insert id="insert" parameterType="map">
+		INSERT INTO board_file(b_idx,f_name,o_name)
+		VALUES(#{b_idx}, #{f_name},#{o_name})
+	</insert>
+	
+	<select id="file_list" parameterType="String" resultType="vo.BfileVO">
+	SELECT * FROM board_file
+	WHERE b_idx = #{b_idx}
+	</select>
+	
+	<update id="edit" parameterType="map">
+		UPDATE board_file
+		SET f_name = #{fname},
+			o_name = #{oname}
+		WHERE b_idx=#{b_idx}
+	</update>
+	
+</mapper>
